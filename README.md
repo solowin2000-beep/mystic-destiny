@@ -53,9 +53,10 @@ node tools/indexnow.cjs     # submit the sitemap URLs to Bing IndexNow
 ```
 
 ## Deploy
-The build output is plain static files. Either upload the contents of `dist/` to Cloudflare Pages, or
-connect this repository to a Cloudflare Pages project with build command `npm run build` and output
-directory `dist`.
+This repository is connected to the Cloudflare Pages project `mystic-destiny` at
+https://mystic-destiny.pages.dev/. Pushing to `main` builds and deploys automatically
+(build command `npm run build`, output directory `dist`).
+The build output is plain static files, so the contents of `dist/` can also be uploaded by hand if needed.
 
 ## Data sources
 - Timezone rules: IANA tz database, through the browser's `Intl` API
