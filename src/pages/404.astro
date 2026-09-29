@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Page not found"
+  description="The page you were looking for does not exist."
+  path="/404/"
+  noindex={true}
+>
+  <h1>That page does not exist</h1>
+  <p class="lede">The link may be out of date. These pages are the useful ones:</p>
+  <div class="tools">
+    <a class="tool" href="/bazi-calculator/"><h3>BaZi calculator</h3><p>Your four pillars on true solar time.</p></a>
+    <a class="tool" href="/true-solar-time/"><h3>True solar time</h3><p>Why the clock is not the sun.</p></a>
+    <a class="tool" href="/what-is-bazi/"><h3>What is BaZi</h3><p>The four pillars, explained from zero.</p></a>
+  </div>
+</Base>

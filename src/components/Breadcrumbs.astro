@@ -1,0 +1,24 @@
+---
+import { SITE } from '../site.config.mjs';
+const { items = [] } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [{ name: 'Home', path: '/' }, ...items].map((it, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: it.name,
+    item: new URL(it.path, SITE.url).href,
+  })),
+};
+---
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/">Home</a>
+  {items.map((it, i) => (
+    <>
+      {' / '}
+      {i === items.length - 1 ? <span aria-current="page">{it.name}</span> : <a href={it.path}>{it.name}</a>}
+    </>
+  ))}
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

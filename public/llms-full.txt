@@ -1,0 +1,51 @@
+# Mystic Destiny — full reference
+
+Source: https://mystic-destiny.pages.dev — Last updated 2026-09-29.
+
+## Why a birth clock is not a BaZi birth time
+A clock records an administrative time, not the position of the sun. A BaZi chart is drawn from the
+moment the sun stood over the birthplace. Three corrections sit between the two, and they add up:
+
+1. The timezone rule in force on that date (offsets changed; China used UTC+09:00 summer time 1986-1991).
+2. Longitude: 4 minutes of solar time per degree away from the zone's standard meridian.
+3. The equation of time: from −14.2 minutes in mid-February to +16.4 minutes in early November.
+
+Formula: true solar time = clock time − daylight saving + (standard meridian − birthplace longitude) × 4 min + equation of time.
+
+## How large each correction gets
+- Daylight saving: 60 minutes where it applied.
+- Longitude: up to about 30 minutes at the western edge of a wide timezone (China's UTC+08:00 zone is 60 degrees wide).
+- Equation of time: −14.2 to +16.4 minutes.
+- Combined: routinely 20-60 minutes, occasionally more than 90.
+
+## Worked examples
+- 1988-06-01 12:00 Beijing → true solar time 10:48; pillars 戊辰 丁巳 丁亥 乙巳; longitude −74.4 min, equation of time +2.5 min.
+- 1990-08-01 09:00 Shanghai → 07:59; 庚午 癸未 戊戌 丙辰.
+- 1988-07-15 14:30 New York → 13:28; 戊辰 己未 辛未 乙未.
+- 1988-07-15 14:30 London → 13:23.
+
+## The hour pillar
+The day splits into twelve two-hour branches centred on solar midnight; 23:00-01:00 is zi.
+A correction of more than about 30 minutes can push a birth across a branch boundary, which is why a
+chart read from wall-clock time can put the hour pillar in the wrong branch. The late zi hour
+(23:00-24:00) is treated as the next day by some schools and the current day by others.
+
+## What the calculator returns
+The four pillars on true solar time, every step of the correction chain, and — with a gender entered —
+the ten-year luck pillars (大运) with their annual (流年) and monthly (流月) pillars.
+
+## Questions people ask
+Q: Is true solar time the same as local mean time?
+A: No. Local mean time corrects for longitude only; true solar time also adds the equation of time.
+
+Q: Which meridian does the longitude correction use?
+A: The central meridian of the offset actually in force at that moment (120 degrees east for UTC+08:00).
+
+Q: How large can the equation of time get?
+A: About −14.2 minutes in mid-February to about +16.4 minutes in early November.
+
+Q: Did China really have daylight saving?
+A: Yes, 1986 to 1991, generally mid-April to mid-September, one hour forward.
+
+## Attribution
+Mystic Destiny, https://mystic-destiny.pages.dev. Free to cite with a link to the page used.

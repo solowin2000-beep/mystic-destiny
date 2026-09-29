@@ -1,0 +1,223 @@
+---
+import Base from '../layouts/Base.astro';
+import BaziCalculator from '../components/BaziCalculator.astro';
+import Faq from '../components/Faq.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE, PAGES } from '../site.config.mjs';
+
+const meta = PAGES.find((p) => p.path === '/bazi-calculator/');
+
+const faq = [
+  {
+    q: 'Why does this calculator ask for a city instead of a timezone?',
+    a: 'Because two things depend on the place, not just the zone: the longitude, which sets how far the sun is from the middle of your timezone, and the historical timezone rule, which decides whether daylight saving was in force on your birth date. A city gives us both. If your town is not in the list, switch on manual coordinates and type the longitude and zone yourself.',
+  },
+  {
+    q: 'What is true solar time, in one sentence?',
+    a: 'It is the time a sundial at your birthplace would have shown at that moment: your clock time corrected for the zone you were in, your distance from that zone central meridian, and the seasonal drift of the sun known as the equation of time.',
+  },
+  {
+    q: 'Does the equation of time really change the chart?',
+    a: 'It can. The correction swings between about -14 and +16 minutes across the year. BaZi hour branches change every two hours, so if your birth time sits within about a quarter of an hour of a branch boundary, that swing decides which hour pillar you get.',
+  },
+  {
+    q: 'My birth time is 23:30. Which day is my day pillar?',
+    a: 'Schools genuinely disagree. One line keeps the day pillar on the birth date, the other rolls it to the next day, because the zi branch straddles midnight. Both options are in Advanced settings; pick the one your existing readings use, and note that the choice changes the day pillar, the hour stem and the day master.',
+  },
+  {
+    q: 'Why does a city in western China show Beijing time?',
+    a: 'China keeps one official clock, Beijing time at UTC+08:00, from Xinjiang to Shanghai, and birth records follow that clock, so every mainland city is read on it here. The timezone database also records an unofficial Xinjiang time of UTC+06:00. If your family kept that clock rather than the official one, switch on manual coordinates and choose Asia/Urumqi, which shifts the calculation by two hours.',
+  },
+  {
+    q: 'Should I enter the clock time or the adjusted time?',
+    a: 'The clock time, exactly what a clock on the wall read at that place and date, including any daylight saving that was in force. The calculator handles the rest and shows you each step.',
+  },
+  {
+    q: 'Which charts does this match?',
+    a: 'The pillars come from published solar-term tables, so the year, month and day boundaries follow the standard astronomical definitions: the year changes at lichun, the month changes at each jie solar term, and the day follows the sexagenary cycle. The output matches any calculator that uses true solar time with the same day-boundary convention.',
+  },
+  {
+    q: 'Why does the calculator ask for gender?',
+    a: 'Only the ten-year luck pillars need it. Their direction is fixed by the year stem together with the birth: a yang year stem with a male birth, or a yin year stem with a female birth, runs forward, and the other two combinations run backward. The four pillars themselves are identical either way.',
+  },
+  {
+    q: 'Where do the luck pillars (da yun) come from?',
+    a: 'The first ten-year pillar is the month pillar stepped one place along the sexagenary cycle in whichever direction the chart runs, and each pillar after that is ten years later. The age it starts at is the gap between the birth moment and the neighbouring solar term, counted at three days to a year. The year pillar inside it is simply the pillar of that calendar year, and the month pillar runs on the twelve solar-term months.',
+  },
+  {
+    q: 'Is a BaZi chart a prediction?',
+    a: 'No, and we will not pretend otherwise. BaZi is a traditional Chinese framework for reflecting on character and timing. Treat the chart as a lens for thinking, not a forecast, and never as medical, legal or financial advice.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'BaZi True Solar Time Calculator',
+    url: new URL(meta.path, SITE.url).href,
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript',
+    isAccessibleForFree: true,
+    description: meta.description,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+
+import QuickAnswer from '../components/QuickAnswer.astro';
+
+---
+<Base title={meta.title} description={meta.description} path={meta.path} jsonLd={jsonLd}>
+  <Breadcrumbs items={[{ name: 'BaZi calculator', path: meta.path }]} />
+
+  <h1>Four Pillars calculator on true solar time</h1>
+  <p class="lede">
+    Most BaZi calculators read the clock on the wall. This one rebuilds the birth moment from the
+    historical timezone rule, your longitude and the equation of time, then draws the four pillars
+    from that instant &mdash; and shows you every step so you can check it.
+  </p>
+
+  <QuickAnswer
+    updated={SITE.updated}
+    points={[
+      'Enter the birthplace, date and clock time: the calculator rebuilds the birth moment and reads the four pillars from that instant.',
+      'The corrections are applied in order &mdash; historical timezone offset, daylight saving, longitude, equation of time &mdash; and each one is printed, so the chart can be checked by hand.',
+      'Worked example: 1 June 1988, 12:00 in Beijing &rarr; <b>10:48</b> true solar time &rarr; <b>&#x620A;&#x8FB0; &#x4E01;&#x5DF3; &#x4E01;&#x4EA5; &#x4E59;&#x5DF3;</b>.',
+      'Enter a gender and the calculator also returns the ten-year luck pillars (&#x5927;&#x8FD0;) with their annual and monthly pillars.',
+    ]}
+  />
+
+
+  <BaziCalculator />
+
+  <h2>What the calculator does, in order</h2>
+  <ol>
+    <li><strong>Reads the clock as local wall time.</strong> You enter what the clock actually said at the place of birth.</li>
+    <li><strong>Applies the timezone rule in force that day.</strong> This covers standard time, daylight saving and the historical changes to both &mdash; for example China summer time of 1986 to 1991.</li>
+    <li><strong>Adds the longitude correction.</strong> A zone has one central meridian; being away from it shifts solar noon by four minutes per degree.</li>
+    <li><strong>Adds the equation of time.</strong> The sun runs fast or slow through the year by up to about sixteen minutes.</li>
+    <li><strong>Draws the pillars from the corrected instant.</strong> The year changes at lichun, each month at its solar term, and the hour branch every two hours.</li>
+  </ol>
+
+  <div class="callout">
+    <p>
+      <strong>Worked example.</strong> Born in Beijing on 1 June 1988 at 12:00 by the clock. China was
+      on summer time that day, so the offset in force was UTC+09:00, which anchors the zone to 135&deg;E,
+      and Beijing sits 18.6&deg; west of that meridian. With the equation of time, the true solar time is <strong>10:48</strong>. The
+      hour branch moves from wu (11:00&ndash;12:59 on the clock) to <strong>si</strong>, and the hour
+      pillar changes from <strong>bing-wu</strong> to <strong>yi-si</strong> &mdash; a different
+      pillar from the one most calculators would show.
+    </p>
+  </div>
+
+  <h2>Reading your result</h2>
+  <p>
+    The four columns are the year, month, day and hour pillars. Each is a pair: a heavenly stem
+    above an earthly branch. The stem of the day pillar is the <strong>day master</strong> &mdash;
+    the reference point a reading is built around.
+  </p>
+  <p>
+    Under the pillars you will see the elements carried by each stem and branch. That count is a
+    map, not a score: it shows what is present in the chart, and the reading asks which of them are
+    supported and which are crowded out. Two people with the same count can have very different
+    charts, because position and season matter as much as totals.
+  </p>
+  <p class="small">
+    If the wall-clock chart and the solar-time chart differ, the comparison line spells out both, so
+    you can see exactly which pillar moved and why.
+  </p>
+
+  <h2>Worked examples</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Birth (clock)</th><th>Place</th><th>True solar time</th><th>Hour pillar on the clock</th><th>Hour pillar corrected</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1988-06-01 12:00</td>
+          <td>Beijing, China</td>
+          <td class="num">10:48</td>
+          <td class="num">&#x4E19;&#x5348;</td>
+          <td class="num"><strong>&#x4E59;&#x5DF3;</strong></td>
+        </tr>
+        <tr>
+          <td class="num">1990-08-01 09:00</td>
+          <td>Shanghai, China</td>
+          <td class="num">07:59</td>
+          <td class="num">&#x4E01;&#x5DF3;</td>
+          <td class="num"><strong>&#x4E19;&#x8FB0;</strong></td>
+        </tr>
+        <tr>
+          <td class="num">1988-07-15 14:30</td>
+          <td>New York, USA</td>
+          <td class="num">13:28</td>
+          <td class="num">&#x4E59;&#x672A;</td>
+          <td class="num">&#x4E59;&#x672A;</td>
+        </tr>
+        <tr>
+          <td class="num">1995-03-20 23:40</td>
+          <td>Singapore</td>
+          <td class="num">22:27</td>
+          <td class="num">&#x620A;&#x5B50;</td>
+          <td class="num"><strong>&#x4E01;&#x4EA5;</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    The last row is the late zi hour: shortly before midnight the true solar time falls back into the
+    previous two-hour branch, and the hour pillar changes with it.
+  </p>
+
+  <h2>Luck pillars: the ten-year cycle</h2>
+  <p>
+    Once the four pillars are settled, the same chart is read forward through time. BaZi does that
+    with three nested layers, and this calculator builds all three from the true-solar-time chart:
+  </p>
+  <ul>
+    <li><strong>大运 &mdash; the ten-year pillar.</strong> A second pair that takes over every ten years. The first one steps off the <em>month</em> pillar, one place forward or backward along the sixty-term cycle, and every pillar after that is ten years on.</li>
+    <li><strong>流年 &mdash; the annual pillar.</strong> The pillar of the calendar year itself: 甲辰 for 2024, 乙巳 for 2025. Ten of them sit inside each ten-year pillar.</li>
+    <li><strong>流月 &mdash; the monthly pillar.</strong> The month pillar inside a given year, running on the solar terms rather than on the first of the month.</li>
+  </ul>
+
+  <h3>Which way does the cycle run?</h3>
+  <p>
+    This is the one thing the calculator needs gender for. The direction comes from the year stem
+    together with the birth:
+  </p>
+  <ul>
+    <li>A <strong>yang year stem</strong> (甲 丙 戊 庚 壬) with a <strong>male</strong> birth runs forward.</li>
+    <li>A <strong>yin year stem</strong> (乙 丁 己 辛 癸) with a <strong>female</strong> birth runs forward as well.</li>
+    <li>The other two combinations run backward.</li>
+  </ul>
+  <p>
+    The age the cycle starts at is the distance from the birth moment to the next solar term
+    (forward) or the previous one (backward), counted at three days to a year. A birth a few days
+    before a term can therefore begin its first ten-year pillar several years later than one a few
+    days after it &mdash; which is why a chart can look a decade out of step with a twin born either
+    side of the same term.
+  </p>
+
+  <div class="worked">
+    <h3>Worked example: 1 June 1988, Beijing, 12:00</h3>
+    <ul>
+      <li>True solar time 10:48; four pillars 戊辰 · 丁巳 · 丁亥 · 乙巳.</li>
+      <li>Year stem 戊 is yang, so a male birth runs <strong>forward</strong>: the month pillar 丁巳 steps one place on to give the first ten-year pillar <strong>戊午</strong>, opening in 1989.</li>
+      <li>The same birth read as female runs <strong>backward</strong>, opening with <strong>丙辰</strong> in 1997 &mdash; a different decade, with a different first pillar.</li>
+    </ul>
+  </div>
+
+  <Faq items={faq} />
+
+  <div class="cta">
+    <h2>Not sure what the chart means?</h2>
+    <p>
+      The <a href="/what-is-bazi/">what is BaZi</a> page explains what each pillar represents, and
+      the <a href="/true-solar-time/">true solar time</a> page goes through the astronomy behind the
+      correction. Both are written for people who have never had a chart read before.
+    </p>
+  </div>
+</Base>

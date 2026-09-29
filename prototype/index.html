@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaZi Calculator with True Solar Time | Four Pillars of Destiny</title>
+<meta name="description" content="Free BaZi (Four Pillars of Destiny) calculator that corrects your birth time to true solar time using historical worldwide timezone data. Handles daylight saving, longitude and the equation of time.">
+<style>
+  :root{
+    --bg:#f5f5f7; --card:#ffffff; --ink:#1d1d1f; --ink2:#6e6e73; --hair:#d2d2d7;
+    --blue:#0071e3; --blue-dark:#0062c4;
+    --wood:#2f9e44; --fire:#e03131; --earth:#b07d2b; --metal:#5c6b7a; --water:#1c7ed6;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:17px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    padding:0 20px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header{padding:44px 0 28px;text-align:center}
+  .brand{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:600;letter-spacing:.02em;color:var(--ink2)}
+  .brand svg{width:18px;height:18px}
+  h1{font-size:40px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin:18px 0 12px}
+  .lede{font-size:19px;color:var(--ink2);max-width:600px;margin:0 auto}
+  .card{background:var(--card);border-radius:var(--radius);padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 28px rgba(0,0,0,.05);margin-bottom:20px}
+  .field{margin-bottom:22px}
+  .field:last-child{margin-bottom:0}
+  label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);letter-spacing:.03em;text-transform:uppercase;margin-bottom:8px}
+  label svg{width:15px;height:15px;flex:none;stroke:var(--ink2)}
+  input[type=text],input[type=date],input[type=time],select,input[type=number]{
+    width:100%;padding:13px 15px;font-size:17px;font-family:inherit;color:var(--ink);
+    background:#fafafa;border:1px solid var(--hair);border-radius:12px;outline:none;transition:border-color .15s, background .15s;
+  }
+  input:focus,select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(0,113,227,.12)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .hint{font-size:13px;color:var(--ink2);margin-top:7px;line-height:1.45}
+  .citybox{position:relative}
+  .suggest{
+    position:absolute;z-index:40;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--hair);
+    border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);max-height:290px;overflow:auto;display:none
+  }
+  .suggest.on{display:block}
+  .suggest div{padding:11px 15px;cursor:pointer;font-size:15px;border-bottom:1px solid #f2f2f2;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .suggest div:last-child{border-bottom:0}
+  .suggest div:hover,.suggest div.sel{background:#f0f6ff}
+  .suggest .sub{font-size:12.5px;color:var(--ink2);text-align:right;flex:none}
+  .picked{display:none;margin-top:10px;font-size:13.5px;color:var(--ink2);background:#f0f6ff;border-radius:10px;padding:10px 13px}
+  .picked.on{display:block}
+  .picked b{color:var(--ink)}
+  button.primary{
+    width:100%;padding:15px;font-size:17px;font-weight:600;font-family:inherit;color:#fff;background:var(--blue);
+    border:0;border-radius:12px;cursor:pointer;transition:background .15s
+  }
+  button.primary:hover{background:var(--blue-dark)}
+  details{margin-top:6px}
+  summary{cursor:pointer;font-size:14px;color:var(--blue);font-weight:500;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+ ";font-weight:600}
+  details[open] summary::before{content:"\2212 "}
+  .adv{background:#fafafa;border-radius:12px;padding:16px;margin-top:12px}
+  .adv .field{margin-bottom:16px}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0}
+  .switch p{font-size:14.5px;font-weight:500}
+  .switch span{display:block;font-size:12.5px;color:var(--ink2);font-weight:400}
+  .toggle{position:relative;width:51px;height:31px;flex:none}
+  .toggle input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;position:relative;z-index:2}
+  .toggle i{position:absolute;inset:0;background:#e3e3e6;border-radius:31px;transition:.2s}
+  .toggle i::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle input:checked + i{background:#34c759}
+  .toggle input:checked + i::after{transform:translateX(20px)}
+  .result{display:none}
+  .result.on{display:block}
+  .solartime{text-align:center;padding:8px 0 4px}
+  .solartime .big{font-size:44px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .solartime .date{font-size:19px;color:var(--ink2);font-weight:500}
+  .solartime .tag{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:600;color:#0a6b2f;background:#e7f7ec;padding:5px 12px;border-radius:999px}
+  .chain{list-style:none;margin-top:24px;border-top:1px solid var(--hair)}
+  .chain li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--hair);font-size:15px}
+  .chain li:last-child{border-bottom:0}
+  .chain .k{color:var(--ink2)}
+  .chain .v{font-variant-numeric:tabular-nums;font-weight:500;text-align:right}
+  .chain .total .v{font-weight:700;color:var(--blue)}
+  .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:6px}
+  .pillar{background:#fafafa;border-radius:14px;padding:16px 8px;text-align:center}
+  .pillar .lbl{font-size:11.5px;font-weight:600;color:var(--ink2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+  .pillar .gz{font-size:30px;font-weight:600;line-height:1.15;letter-spacing:.02em}
+  .pillar .el{font-size:11.5px;font-weight:600;margin-top:7px}
+  .cmpline{font-size:14px;color:var(--ink2);background:#fff8e6;border-radius:12px;padding:13px 15px;margin-top:16px;line-height:1.5}
+  .cmpline b{color:var(--ink)}
+  .elsewhere{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:#f0f0f2}
+  footer{text-align:center;font-size:12.5px;color:#86868b;margin-top:34px;line-height:1.6}
+  @media (max-width:620px){
+    h1{font-size:31px} .lede{font-size:17px}
+    .card{padding:22px}
+    .solartime .big{font-size:36px}
+    .pillar .gz{font-size:24px}
+    .row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6e6e73" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+      Mystic Destiny
+    </div>
+    <h1>Your Four Pillars,<br>on true solar time</h1>
+    <p class="lede">Most BaZi calculators use the clock on the wall. This one converts your birth moment to the real position of the sun &mdash; across every timezone and every daylight-saving rule since 1900.</p>
+  </header>
+
+  <section class="card">
+    <div class="field">
+      <label><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>Birth city</label>
+      <div class="citybox">
+        <input type="text" id="city" placeholder="Start typing a city, e.g. New York" autocomplete="off" spellcheck="false">
+        <div class="suggest" id="suggest"></div>
+      </div>
+      <div class="picked" id="picked"></div>
+      <div class="hint">Type at least two letters, then pick your city from the list. The city sets both your longitude and your timezone.</div>
+    </div>
+
+    <div class="field">
+      <label><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Birth date (Gregorian)</label>
+      <input type="date" id="date">
+    </div>
+
+    <div class="field">
+      <label><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></svg>Birth time (clock time at that place)</label>
+      <input type="time" id="time" value="12:00">
+      <div class="hint">Enter exactly what the clock read at the place of birth &mdash; including any daylight saving that was in force that day.</div>
+    </div>
+
+    <details>
+      <summary>Advanced settings</summary>
+      <div class="adv">
+        <div class="switch">
+          <p>Equation of time <span>Adds the sun&rsquo;s seasonal drift, up to about 16 minutes.</span></p>
+          <span class="toggle"><input type="checkbox" id="eot" checked><i></i></span>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Late zi hour (23:00&ndash;23:59)</label>
+          <select id="sect">
+            <option value="2" selected>Day pillar stays on the birth day</option>
+            <option value="1">Day pillar rolls to the next day</option>
+          </select>
+          <div class="hint">Schools disagree here. Pick whichever matches the reading you already trust.</div>
+        </div>
+        <div class="switch">
+          <p>Use my own coordinates <span>For towns missing from the list.</span></p>
+          <span class="toggle"><input type="checkbox" id="manual"><i></i></span>
+        </div>
+        <div class="row" id="manualBox" style="display:none;margin-top:14px">
+          <div class="field" style="margin:0">
+            <label>Longitude</label>
+            <input type="number" id="lng" step="0.001" placeholder="116.388">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Time zone</label>
+            <select id="tz"></select>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div style="margin-top:24px">
+      <button class="primary" id="go">Calculate my chart</button>
+    </div>
+  </section>
+
+  <section class="card result" id="result">
+    <div class="solartime">
+      <div class="date" id="solarDate">&mdash;</div>
+      <div class="big" id="solarTime">&mdash;</div>
+      <div class="tag" id="solarTag">True solar time</div>
+    </div>
+    <ul class="chain" id="chain"></ul>
+    <div class="pillars" id="pillars" style="margin-top:26px"></div>
+    <div class="cmpline" id="compare"></div>
+    <div class="elsewhere" id="elements"></div>
+  </section>
+
+  <footer>
+    Calculated from the IANA world timezone database and published solar-term tables.<br>
+    For cultural and entertainment purposes.
+  </footer>
+</div>
+
+<script src="lunar.js"></script>
+<script src="cities.js"></script>
+<script src="engine.js"></script>
+<script>
+(function(){
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  var EL_COLOR = {Wood:"#2f9e44", Fire:"#e03131", Earth:"#b07d2b", Metal:"#5c6b7a", Water:"#1c7ed6"};
+  var GAN_EL = {"甲":"Wood","乙":"Wood","丙":"Fire","丁":"Fire","戊":"Earth","己":"Earth","庚":"Metal","辛":"Metal","壬":"Water","癸":"Water"};
+  var ZHI_EL = {"子":"Water","丑":"Earth","寅":"Wood","卯":"Wood","辰":"Earth","巳":"Fire","午":"Fire","未":"Earth","申":"Metal","酉":"Metal","戌":"Earth","亥":"Water"};
+
+  var $ = function(id){ return document.getElementById(id); };
+  var CITIES = window.BAZI_CITIES || [], TZ = window.BAZI_TZ || [];
+  var chosen = null;
+
+  /* ---------- timezone list ---------- */
+  var tzSel = $("tz");
+  TZ.forEach(function(t){ var o = document.createElement("option"); o.value = t; o.textContent = t; tzSel.appendChild(o); });
+
+  /* ---------- city search ---------- */
+  var box = $("suggest"), input = $("city"), items = [], sel = -1;
+  function search(q){
+    q = q.trim().toLowerCase();
+    if (q.length < 2) return [];
+    var exact = [], starts = [], has = [];
+    for (var i = 0; i < CITIES.length; i++){
+      var c = CITIES[i], n = c[0].toLowerCase();
+      if (n === q) exact.push(c);
+      else if (n.indexOf(q) === 0) starts.push(c);
+      else if (n.indexOf(q) > -1) has.push(c);
+    }
+    return exact.concat(starts, has).slice(0, 8);
+  }
+  function render(list){
+    items = list; sel = -1; box.innerHTML = "";
+    if (!list.length){ box.classList.remove("on"); return; }
+    list.forEach(function(c, i){
+      var d = document.createElement("div");
+      d.innerHTML = '<span>' + c[0] + (c[2] ? ", " + c[2] : "") + ", " + c[1] + '</span><span class="sub">' + TZ[c[5]] + '</span>';
+      d.addEventListener("mousedown", function(e){ e.preventDefault(); pick(i); });
+      box.appendChild(d);
+    });
+    box.classList.add("on");
+  }
+  function pick(i){
+    var c = items[i]; if (!c) return;
+    chosen = { name: c[0], country: c[1], region: c[2], lat: c[3], lng: c[4], tz: TZ[c[5]] };
+    input.value = c[0] + (c[2] ? ", " + c[2] : "") + ", " + c[1];
+    box.classList.remove("on");
+    var p = $("picked");
+    p.innerHTML = "Longitude <b>" + c[4] + "&deg;</b> &nbsp;&middot;&nbsp; Time zone <b>" + TZ[c[5]] + "</b> &nbsp;&middot;&nbsp; Approx. UTC offset today <b>" + BaziEngine.fmtOffset(BaziEngine.tzOffsetMinutes(TZ[c[5]], Date.now())) + "</b>";
+    p.classList.add("on");
+  }
+  input.addEventListener("input", function(){
+    chosen = null; $("picked").classList.remove("on");
+    render(search(input.value));
+  });
+  input.addEventListener("keydown", function(e){
+    if (!box.classList.contains("on")) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault();
+      sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      Array.prototype.forEach.call(box.children, function(el, i){ el.classList.toggle("sel", i === sel); });
+      box.children[sel].scrollIntoView({block:"nearest"});
+    } else if (e.key === "Enter" && sel > -1){ e.preventDefault(); pick(sel); }
+    else if (e.key === "Escape"){ box.classList.remove("on"); }
+  });
+  document.addEventListener("click", function(e){ if (!e.target.closest(".citybox")) box.classList.remove("on"); });
+
+  /* ---------- manual coordinates ---------- */
+  $("manual").addEventListener("change", function(){
+    $("manualBox").style.display = this.checked ? "" : "none";
+  });
+
+  /* ---------- defaults ---------- */
+  var d = new Date();
+  $("date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+
+  /* ---------- calculate ---------- */
+  $("go").addEventListener("click", function(){
+    var manual = $("manual").checked;
+    var longitude, tz;
+    if (manual){
+      longitude = parseFloat($("lng").value);
+      tz = tzSel.value;
+      if (isNaN(longitude)){ alert("Please enter a longitude in degrees (east positive, west negative)."); return; }
+    } else {
+      if (!chosen){ alert("Please pick your birth city from the suggestion list."); input.focus(); return; }
+      longitude = chosen.lng; tz = chosen.tz;
+    }
+    var dv = $("date").value, tv = $("time").value || "12:00";
+    if (!dv){ alert("Please choose your birth date."); return; }
+    var dp = dv.split("-").map(Number), tp = tv.split(":").map(Number);
+
+    var res = BaziEngine.toTrueSolarTime({
+      year: dp[0], month: dp[1], day: dp[2], hour: tp[0], minute: tp[1],
+      longitude: longitude, timezone: tz,
+      useEquationOfTime: $("eot").checked
+    });
+    var s = res.solar, b = res.breakdown;
+
+    var ec = Solar.fromYmdHms(s.year, s.month, s.day, s.hour, s.minute, 0).getLunar().getEightChar();
+    ec.setSect(parseInt($("sect").value, 10));
+    var rawEc = Solar.fromYmdHms(dp[0], dp[1], dp[2], tp[0], tp[1], 0).getLunar().getEightChar();
+    rawEc.setSect(parseInt($("sect").value, 10));
+
+    $("solarDate").textContent = s.year + "-" + pad(s.month) + "-" + pad(s.day);
+    $("solarTime").textContent = pad(s.hour) + ":" + pad(s.minute);
+    $("solarTag").textContent = b.dayShift === 0 ? "True solar time"
+      : (b.dayShift > 0 ? "True solar time \u00b7 next calendar day" : "True solar time \u00b7 previous calendar day");
+
+    /* how much daylight saving was in force that day */
+    var janOff = BaziEngine.tzOffsetMinutes(tz, Date.UTC(dp[0], 0, 15, 12, 0, 0));
+    var julOff = BaziEngine.tzOffsetMinutes(tz, Date.UTC(dp[0], 6, 15, 12, 0, 0));
+    var dst = b.utcOffsetMinutes - Math.min(janOff, julOff);
+
+    var rows = [
+      ["Clock time you entered", dp[0] + "-" + pad(dp[1]) + "-" + pad(dp[2]) + " " + pad(tp[0]) + ":" + pad(tp[1])],
+      ["Time zone in force", tz + " (" + b.utcOffsetLabel + ")"]
+    ];
+    if (dst > 0) rows.push(["Daylight saving then", "+" + dst + " minutes"]);
+    rows.push(["Zone central meridian", fmtDeg(b.zoneMeridian)]);
+    rows.push(["Longitude correction", signed(b.longitudeCorrectionMinutes.toFixed(1)) + " min &nbsp;<span style='color:#86868b'>(" + (Math.round(Math.abs(longitude - b.zoneMeridian) * 100) / 100) + "&deg; from the zone meridian)</span>"]);
+    rows.push(["Equation of time", (b.equationOfTimeMinutes === 0 ? "0.0" : signed(b.equationOfTimeMinutes.toFixed(1))) + " min"]);
+    rows.push(["Total shift", signed(b.totalShiftMinutes.toFixed(1)) + " min", true]);
+
+    $("chain").innerHTML = rows.map(function(r){
+      return '<li' + (r[2] ? ' class="total"' : '') + '><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></li>';
+    }).join("");
+
+    var defs = [["Hour", ec.getTime()], ["Day", ec.getDay()], ["Month", ec.getMonth()], ["Year", ec.getYear()]];
+    $("pillars").innerHTML = defs.map(function(p){
+      var gan = p[1][0], zhi = p[1][1];
+      var el = GAN_EL[gan] + " / " + ZHI_EL[zhi];
+      return '<div class="pillar"><div class="lbl">' + p[0] + '</div><div class="gz">' + p[1] + '</div><div class="el" style="color:' + EL_COLOR[GAN_EL[gan]] + '">' + GAN_EL[gan] + '</div></div>';
+    }).join("");
+
+    var changed = ec.getTime() !== rawEc.getTime() || ec.getDay() !== rawEc.getDay() || ec.getMonth() !== rawEc.getMonth();
+    $("compare").innerHTML = changed
+      ? "Reading the wall clock directly would give you <b>" + rawEc.getTime() + "</b> and a day pillar of <b>" + rawEc.getDay() + "</b>. Corrected to true solar time you get <b>" + ec.getTime() + "</b> with a day pillar of <b>" + ec.getDay() + "</b>."
+      : "The correction is small enough today that the clock reading and the true solar reading produce the same chart.";
+
+    var counts = {Wood:0, Fire:0, Earth:0, Metal:0, Water:0};
+    defs.forEach(function(p){
+      counts[GAN_EL[p[1][0]]]++; counts[ZHI_EL[p[1][1]]]++;
+    });
+    $("elements").innerHTML = Object.keys(counts).map(function(k){
+      return '<span class="chip" style="color:' + EL_COLOR[k] + ';background:' + EL_COLOR[k] + '14">' + k + " " + counts[k] + '</span>';
+    }).join("");
+
+    $("result").classList.add("on");
+    $("result").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+
+  function signed(n){ var f = parseFloat(n); return (f > 0 ? "+" : "") + n; }
+  function fmtDeg(v){ return Math.abs(Math.round(v * 100) / 100) + "&deg;" + (v >= 0 ? "E" : "W"); }
+})();
+</script>
+</body>
+</html>

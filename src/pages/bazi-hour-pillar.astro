@@ -1,0 +1,192 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE, PAGES } from '../site.config.mjs';
+
+const meta = PAGES.find((p) => p.path === '/bazi-hour-pillar/');
+
+const windows = [
+  ['Zi', 'Rat', '23:00 - 00:59'],
+  ['Chou', 'Ox', '01:00 - 02:59'],
+  ['Yin', 'Tiger', '03:00 - 04:59'],
+  ['Mao', 'Rabbit', '05:00 - 06:59'],
+  ['Chen', 'Dragon', '07:00 - 08:59'],
+  ['Si', 'Snake', '09:00 - 10:59'],
+  ['Wu', 'Horse', '11:00 - 12:59'],
+  ['Wei', 'Goat', '13:00 - 14:59'],
+  ['Shen', 'Monkey', '15:00 - 16:59'],
+  ['You', 'Rooster', '17:00 - 18:59'],
+  ['Xu', 'Dog', '19:00 - 20:59'],
+  ['Hai', 'Pig', '21:00 - 22:59'],
+];
+
+const faq = [
+  {
+    q: 'What decides the BaZi hour pillar?',
+    a: 'The two-hour branch window your birth moment falls into, measured in true solar time, together with the day stem. The branch comes from the window; the stem is derived from the day stem by a fixed rule. Change the window and both characters of the hour pillar can change.',
+  },
+  {
+    q: 'What is the late zi hour?',
+    a: 'The zi branch begins at 23:00, so births between 23:00 and midnight sit at the very start of the new two-hour window while still belonging to the calendar day that is ending. Schools disagree about whether the day pillar has already turned over at that point, which is the late zi hour debate.',
+  },
+  {
+    q: 'Which convention should I use?',
+    a: 'The one your existing readings use. If you have had a chart read before and it matched your experience, keep that convention so the charts stay comparable. The calculator lets you switch, and it shows the day pillar either way.',
+  },
+  {
+    q: 'Can daylight saving really change my hour pillar?',
+    a: 'Yes. In Shanghai on 1 August 1990 the clock read 09:00 during summer time, but the sun said 07:59, which moves the birth from the si window into the chen window. Same clock, same place, different hour pillar.',
+  },
+  {
+    q: 'My birth time is close to a boundary. What should I do?',
+    a: 'Read both charts. If the true solar time is within a few minutes of a boundary, say so honestly and treat the neighbouring hour pillar as a live possibility. Picking one silently would be false precision.',
+  },
+  {
+    q: 'How do I get my true solar time?',
+    a: 'Enter your birth city, date and clock time in the calculator. It applies the timezone rule, the longitude correction and the equation of time, then shows the solar time and the hour pillar that follows from it.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: meta.title,
+    description: meta.description,
+    url: new URL(meta.path, SITE.url).href,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+
+import QuickAnswer from '../components/QuickAnswer.astro';
+
+---
+<Base title={meta.title} description={meta.description} path={meta.path} ogType="article" jsonLd={jsonLd}>
+  <Breadcrumbs items={[{ name: 'BaZi hour pillar', path: meta.path }]} />
+
+  <h1>The BaZi hour pillar and your birth time</h1>
+  <p class="lede">
+    The hour pillar is the most fragile of the four, because it rests on a two-hour window and a
+    clock reading. Here is how the window is set, where the boundaries fall, and why the last hour
+    of the day causes an argument that has never been settled.
+  </p>
+
+  <QuickAnswer
+    updated={SITE.updated}
+    points={[
+      'The day is divided into twelve two-hour branches, centred on solar midnight: 23:00&ndash;01:00 is <i>zi</i>.',
+      'The hour pillar follows the corrected hour, so a correction of more than about <b>30 minutes</b> can push a birth across a branch boundary.',
+      'Late <i>zi</i> (23:00&ndash;24:00) is read as the next day by some schools and as the current day by others.',
+    ]}
+  />
+
+
+  <h2>Twelve branches, twelve windows</h2>
+  <p>
+    The day is divided into twelve two-hour branches, and the branch your birth moment falls into
+    becomes the lower character of your hour pillar. The upper character follows from the day stem,
+    so once the window is fixed the whole pillar is fixed.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Branch</th><th>Animal</th><th>Window (true solar time)</th></tr>
+      </thead>
+      <tbody>
+        {windows.map((w) => (
+          <tr><td>{w[0]}</td><td>{w[1]}</td><td class="num">{w[2]}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    These are solar-time windows. On a clock they shift, sometimes by well over an hour, which is the
+    subject of the rest of this page. The <a href="/what-is-bazi/">BaZi basics page</a> covers the
+    branches and their elements.
+  </p>
+
+  <h2>The midnight problem: the late zi hour</h2>
+  <p>
+    The zi branch opens at 23:00, one hour before the calendar day ends. A birth at 23:30 therefore
+    belongs to the new two-hour window while the date has not yet turned over. Two conventions exist:
+  </p>
+  <ul>
+    <li><strong>The day pillar stays on the birth date.</strong> That 23:00 to midnight hour is treated as the tail of the old day.</li>
+    <li><strong>The day pillar rolls to the next day.</strong> Because the zi branch has already begun, the new day is treated as having started.</li>
+  </ul>
+  <p>
+    The choice is not cosmetic. It changes the day pillar, the day master, and the hour pillar that
+    is derived from the day stem:
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>True solar time</th><th>Day pillar, stays</th><th>Day pillar, rolls</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1988-06-01 23:30</td><td class="num">&#x4E01;&#x4EA5;</td><td class="num"><strong>&#x620A;&#x5B50;</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Both settings are in the calculator. Pick the one your existing readings use, and if you have
+    never had a reading, pick one and stay consistent.
+  </p>
+
+  <h2>What moves your hour pillar</h2>
+  <p>
+    Before the convention even comes into play, the window itself depends on getting the birth moment
+    right. Three corrections do most of the damage.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Birth (clock)</th><th>Place</th><th>True solar time</th><th>Hour pillar on the clock</th><th>Hour pillar corrected</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1990-08-01 09:00</td>
+          <td>Shanghai</td>
+          <td class="num">07:59</td>
+          <td class="num">&#x4E01;&#x5DF3;</td>
+          <td class="num"><strong>&#x4E19;&#x8FB0;</strong></td>
+        </tr>
+        <tr>
+          <td class="num">1988-06-01 23:30</td>
+          <td>Beijing</td>
+          <td class="num">22:17</td>
+          <td class="num">&#x58EC;&#x5B50;</td>
+          <td class="num"><strong>&#x8F9B;&#x4EA5;</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The first row is summer time: the clock was an hour ahead of standard time and the birthplace sat
+    west of the zone meridian, so the solar time fell back across the boundary into the previous
+    window. The second row is more dramatic still &mdash; a birth the clock places at 23:30, in the zi
+    hour, is moved by the sun to 22:17, in the hai hour, before the midnight question can even arise.
+  </p>
+
+  <h2>How to pin down your own hour pillar</h2>
+  <ol>
+    <li>Get your birth time from a record rather than from memory. A birth certificate, a hospital note or a family diary will beat recollection.</li>
+    <li>Enter the clock reading exactly, including any daylight saving that was in force.</li>
+    <li>Read the true solar time, then check how close it is to a branch boundary. If it is within a few minutes, treat both neighbouring hour pillars as candidates and say so.</li>
+    <li>Decide the late zi convention before you read the chart, not after seeing which answer you prefer.</li>
+  </ol>
+  <p>
+    The <a href="/true-solar-time/">true solar time page</a> explains where each correction comes from
+    and how large it can be.
+  </p>
+
+  <Faq items={faq} />
+
+  <div class="cta">
+    <h2>Find your own true solar time</h2>
+    <p><a class="btn-link" href="/bazi-calculator/">Open the BaZi calculator</a></p>
+  </div>
+</Base>

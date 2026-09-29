@@ -1,0 +1,542 @@
+---
+import { SITE } from '../site.config.mjs';
+// 命理排盘计算器：把出生地的墙上时间换算成真太阳时，再排四柱。
+// 依赖 /lib/lunar.js（节气与四柱）、/lib/engine.js（真太阳时）、/lib/cities.js（城市库，按需加载）。
+---
+<div class="card" id="calc">
+  <h2>Your birth details</h2>
+
+  <div class="field">
+    <label for="city">Birth city</label>
+    <div class="citybox">
+      <input type="text" id="city" placeholder="Start typing a city, e.g. New York" autocomplete="off" spellcheck="false" />
+      <div class="suggest" id="suggest"></div>
+    </div>
+    <div class="picked" id="picked"></div>
+    <div class="hint">Type at least two letters and pick your city from the list. The city sets both your longitude and the historical timezone rule.</div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <label for="gender">Gender</label>
+      <select id="gender">
+        <option value="1" selected>Male</option>
+        <option value="0">Female</option>
+      </select>
+      <div class="hint">Sets which way the luck pillars run.</div>
+    </div>
+    <div class="field">
+      <label for="date">Birth date (Gregorian)</label>
+      <input type="date" id="date" />
+    </div>
+    <div class="field">
+      <label for="time">Birth time (clock at that place)</label>
+      <input type="time" id="time" value="12:00" />
+    </div>
+  </div>
+  <div class="hint">Enter exactly what the clock read &mdash; including any daylight saving that was in force that day.</div>
+
+  <details style="margin-top:22px">
+    <summary>Advanced settings</summary>
+    <div class="adv">
+      <div class="switch">
+        <p>Equation of time <span class="sub">Adds the sun's seasonal drift, up to about 16 minutes.</span></p>
+        <span class="toggle"><input type="checkbox" id="eot" checked /><i></i></span>
+      </div>
+
+      <div class="field">
+        <label for="sect">Late zi hour (23:00&ndash;23:59)</label>
+        <select id="sect">
+          <option value="2" selected>Day pillar stays on the birth day</option>
+          <option value="1">Day pillar rolls to the next day</option>
+        </select>
+        <div class="hint">Schools disagree here. Pick whichever matches the readings you already trust.</div>
+      </div>
+
+      <div class="switch">
+        <p>Use my own coordinates <span class="sub">For towns missing from the list, or someone born at sea.</span></p>
+        <span class="toggle"><input type="checkbox" id="manual" /><i></i></span>
+      </div>
+
+      <div class="field-grid hidden" id="manualBox">
+        <div class="field">
+          <label for="lng">Longitude (east +, west &minus;)</label>
+          <input type="number" id="lng" step="0.001" placeholder="116.388" />
+        </div>
+        <div class="field">
+          <label for="tz">Time zone</label>
+          <select id="tz"></select>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <div style="margin-top:24px">
+    <button id="go" type="button">Calculate my chart</button>
+  </div>
+  <div class="hint" id="calcMsg" role="status"></div>
+  <noscript>
+    <p class="hint" style="margin-top:10px">
+      This calculator needs JavaScript. The whole calculation runs inside your browser, so no birth
+      details are ever sent anywhere.
+    </p>
+  </noscript>
+</div>
+
+<div class="card result" id="result">
+  <div class="solartime">
+    <div class="date" id="solarDate">&mdash;</div>
+    <div class="big" id="solarTime">&mdash;</div>
+    <div class="tag" id="solarTag">True solar time</div>
+  </div>
+  <div class="shift" id="shift"></div>
+
+  <ul class="chain" id="chain"></ul>
+  <div class="pillars" id="pillars"></div>
+  <div class="cmpline" id="compare"></div>
+  <div class="chips" id="elements"></div>
+
+  <div class="actions">
+    <button class="secondary" id="copysum" type="button">Copy the summary</button>
+    <button class="secondary" id="copydata" type="button">Copy the raw numbers</button>
+  </div>
+  {SITE.whatsapp && (
+    <p class="resultnote">
+      Want a full reading of these four pillars?{' '}
+      <a
+        id="wa"
+        href={'https://wa.me/' + SITE.whatsapp}
+        data-number={SITE.whatsapp}
+        target="_blank"
+        rel="noopener"
+      >Send the chart on WhatsApp</a> and we will take it from there.
+    </p>
+  )}
+
+  <p class="resultnote">
+    Every figure above is reproducible: the timezone rule, the longitude offset and the equation of
+    time are listed in order, so anyone can check the working.
+  </p>
+</div>
+
+<div class="card result" id="luck">
+  <h2>Luck pillars <span class="zh">大运</span></h2>
+  <p class="luckintro" id="luckIntro"></p>
+  <div class="luckrow" id="dayun" role="group" aria-label="Ten year luck pillars"></div>
+
+  <h3 class="luckhead">Annual pillars <span class="zh">流年</span></h3>
+  <div class="luckrow" id="liunian" role="group" aria-label="Annual pillars"></div>
+
+  <h3 class="luckhead">Monthly pillars <span class="zh">流月</span></h3>
+  <div class="table-scroll">
+    <table class="liuyue">
+      <thead>
+        <tr><th>Month</th><th>Pillar</th><th>Elements</th></tr>
+      </thead>
+      <tbody id="liuyue"></tbody>
+    </table>
+  </div>
+
+  <p class="resultnote">
+    The use of a ten-year cycle (<b>大运</b>), a year pillar (<b>流年</b>) and a month pillar
+    (<b>流月</b>) is traditional Chinese practice for looking at timing. Schools differ on the exact
+    start age and on how much weight to give each pillar, so read these alongside a qualified
+    reader rather than as a forecast.
+  </p>
+</div>
+
+<script is:inline src="/lib/lunar.js"></script>
+<script is:inline src="/lib/engine.js"></script>
+<script is:inline src="/lib/luck.js"></script>
+<script is:inline>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var pad = function (n) { return String(n).padStart(2, "0"); };
+  var msg = $("calcMsg");
+
+  if (!window.Solar || !window.BaziEngine || !window.BaziLuck) {
+    if (msg) msg.textContent = "The chart library did not load. Please refresh the page.";
+    return;
+  }
+
+  var GAN_EL = { "甲": "Wood", "乙": "Wood", "丙": "Fire", "丁": "Fire", "戊": "Earth", "己": "Earth", "庚": "Metal", "辛": "Metal", "壬": "Water", "癸": "Water" };
+  var ZHI_EL = { "子": "Water", "丑": "Earth", "寅": "Wood", "卯": "Wood", "辰": "Earth", "巳": "Fire", "午": "Fire", "未": "Earth", "申": "Metal", "酉": "Metal", "戌": "Earth", "亥": "Water" };
+  var EL_HEX = { Wood: "#4fd98a", Fire: "#ff7a7a", Earth: "#e0b155", Metal: "#b9c6d8", Water: "#5cb8ff" };
+  var EL_CN = { Wood: "\u6728", Fire: "\u706b", Earth: "\u571f", Metal: "\u91d1", Water: "\u6c34" };
+
+  /* ---------- city data, loaded only when needed (the file is large) ---------- */
+  var CITIES = null, TZ = null, loading = false, waiters = [];
+  function ensureCities(cb) {
+    if (CITIES) { cb(); return; }
+    waiters.push(cb);
+    if (loading) return;
+    loading = true;
+    var s = document.createElement("script");
+    s.src = "/lib/cities.js";
+    s.onload = function () {
+      CITIES = window.BAZI_CITIES || [];
+      TZ = window.BAZI_TZ || [];
+      fillTimezones();
+      var q = waiters; waiters = []; loading = false;
+      q.forEach(function (f) { f(); });
+    };
+    s.onerror = function () {
+      loading = false;
+      var q = waiters; waiters = [];
+      q.forEach(function (f) { f(new Error("cities failed")); });
+    };
+    document.head.appendChild(s);
+  }
+
+  function fillTimezones() {
+    var sel = $("tz");
+    if (!sel || sel.options.length) return;
+    (TZ || []).forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+  }
+
+  /* ---------- city autocomplete ---------- */
+  var box = $("suggest"), input = $("city"), items = [], sel = -1, chosen = null, wantList = false;
+
+  function search(q) {
+    q = q.trim().toLowerCase();
+    if (q.length < 2 || !CITIES) return [];
+    var exact = [], starts = [], has = [];
+    for (var i = 0; i < CITIES.length; i++) {
+      var c = CITIES[i], n = String(c[0]).toLowerCase();
+      if (n === q) exact.push(c);
+      else if (n.indexOf(q) === 0) starts.push(c);
+      else if (n.indexOf(q) > -1) has.push(c);
+    }
+    return exact.concat(starts, has).slice(0, 8);
+  }
+
+  function closeList() { box.classList.remove("on"); sel = -1; }
+
+  function render(list) {
+    items = list; sel = -1; box.innerHTML = "";
+    if (!list.length) {
+      if (wantList && input.value.trim().length >= 2) {
+        box.innerHTML = '<div class="empty">No city matches. Turn on "Use my own coordinates" below.</div>';
+        box.classList.add("on");
+      } else {
+        closeList();
+      }
+      return;
+    }
+    list.forEach(function (c, i) {
+      var d = document.createElement("div");
+      d.innerHTML = "<span>" + c[0] + (c[2] ? ", " + c[2] : "") + ", " + c[1] + '</span><span class="sub">' + TZ[c[5]] + "</span>";
+      d.addEventListener("mousedown", function (e) { e.preventDefault(); pick(i); });
+      box.appendChild(d);
+    });
+    box.classList.add("on");
+  }
+
+  function pick(i) {
+    var c = items[i];
+    if (!c) return;
+    chosen = { name: c[0], country: c[1], region: c[2], lat: c[3], lng: c[4], tz: TZ[c[5]] };
+    input.value = c[0] + (c[2] ? ", " + c[2] : "") + ", " + c[1];
+    closeList();
+    var p = $("picked");
+    p.innerHTML = "Longitude <b>" + c[4] + "&deg;</b> &nbsp;&middot;&nbsp; Time zone <b>" + TZ[c[5]] +
+      "</b> &nbsp;&middot;&nbsp; UTC offset today <b>" +
+      window.BaziEngine.fmtOffset(window.BaziEngine.tzOffsetMinutes(TZ[c[5]], Date.now())) + "</b>";
+    p.classList.add("on");
+  }
+
+  function refresh() {
+    var q = input.value;
+    ensureCities(function (err) {
+      if (err) return;
+      render(search(q));
+    });
+  }
+
+  input.addEventListener("input", function () {
+    chosen = null;
+    $("picked").classList.remove("on");
+    wantList = true;
+    refresh();
+  });
+  input.addEventListener("focus", function () { wantList = true; ensureCities(function () {}); });
+  input.addEventListener("keydown", function (e) {
+    if (!box.classList.contains("on") || !items.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      Array.prototype.forEach.call(box.children, function (el, i) { el.classList.toggle("sel", i === sel); });
+      if (box.children[sel]) box.children[sel].scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter" && sel > -1) {
+      e.preventDefault(); pick(sel);
+    } else if (e.key === "Escape") {
+      closeList();
+    }
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest || !e.target.closest(".citybox")) closeList();
+  });
+
+  /* ---------- manual coordinates ---------- */
+  $("manual").addEventListener("change", function () {
+    var on = this.checked;
+    $("manualBox").classList.toggle("hidden", !on);
+    if (on) {
+      ensureCities(function () {});
+      // seed the longitude with the picked city so the field is never empty
+      if (chosen && !$("lng").value) $("lng").value = chosen.lng;
+      if (chosen && TZ && TZ.indexOf(chosen.tz) > -1) $("tz").value = chosen.tz;
+    }
+  });
+
+  /* ---------- 大运 / 流年 / 流月 ---------- */
+  var THIS_YEAR = new Date().getFullYear();
+  var luck = null;
+
+  function gzColored(gz) {
+    return '<span style="color:' + EL_HEX[GAN_EL[gz[0]]] + '">' + gz[0] + '</span>' +
+      '<span style="color:' + EL_HEX[ZHI_EL[gz[1]]] + '">' + gz[1] + '</span>';
+  }
+  function elWords(gz) {
+    return GAN_EL[gz[0]] + " " + EL_CN[GAN_EL[gz[0]]] + " / " + ZHI_EL[gz[1]] + " " + EL_CN[ZHI_EL[gz[1]]];
+  }
+  function yearOffset(daYun, year) {
+    for (var i = 0; i < daYun.liuNian.length; i++) {
+      if (daYun.liuNian[i].year === year) return i;
+    }
+    return 0;
+  }
+
+  function drawDayun() {
+    var L = luck.L;
+    $("dayun").innerHTML = L.daYun.map(function (d, i) {
+      var now = THIS_YEAR >= d.startYear && THIS_YEAR <= d.endYear;
+      return '<button type="button" class="luckcard' + (now ? " current" : "") + '" data-i="' + i +
+        '" aria-pressed="' + (i === luck.daYunIdx) + '"><span class="gz">' + gzColored(d.ganZhi) + '</span>' +
+        '<span class="meta">' + d.startYear + "\u2013" + d.endYear + "<br>age " + d.startAge + "\u2013" + d.endAge +
+        "</span>" + (now ? '<span class="now">current decade</span>' : "") + "</button>";
+    }).join("");
+  }
+
+  function drawLiunian() {
+    var d = luck.L.daYun[luck.daYunIdx];
+    $("liunian").innerHTML = d.liuNian.map(function (n, i) {
+      var now = n.year === THIS_YEAR;
+      return '<button type="button" class="luckcard small' + (now ? " current" : "") + '" data-j="' + i +
+        '" aria-pressed="' + (i === luck.liuNianIdx) + '"><span class="gz">' + gzColored(n.ganZhi) + '</span>' +
+        '<span class="meta">' + n.year + "<br>age " + n.age + "</span></button>";
+    }).join("");
+  }
+
+  function drawLiuyue() {
+    var d = luck.L.daYun[luck.daYunIdx];
+    var n = d.liuNian[luck.liuNianIdx];
+    $("liuyue").innerHTML = n.liuYue.map(function (m) {
+      return '<tr><td class="m">' + m.monthName + "\u6708</td><td>" + gzColored(m.ganZhi) +
+        '</td><td class="m">' + elWords(m.ganZhi) + "</td></tr>";
+    }).join("");
+  }
+
+  function buildLuck(solarEc, gender) {
+    var L = window.BaziLuck.build(solarEc, gender, 1);
+    var idx = window.BaziLuck.indexForYear(L, THIS_YEAR);
+    if (idx < 0) idx = 0;
+    luck = { L: L, daYunIdx: idx, liuNianIdx: yearOffset(L.daYun[idx], THIS_YEAR) };
+
+    var yearGan = solarEc.getYear()[0];
+    var yang = "\u7532\u4e19\u620a\u5e9a\u58ec".indexOf(yearGan) > -1;
+    $("luckIntro").innerHTML = "The year stem <b>" + yearGan + "</b> is " + (yang ? "yang" : "yin") +
+      " and the birth is " + (gender === 1 ? "male" : "female") + ", so the cycle runs <b>" +
+      (L.forward ? "forward" : "backward") + "</b>. It starts on <b>" + L.startSolarDate +
+      "</b>, about <b>" + window.BaziLuck.startText(L) +
+      "</b> after birth, so the first ten-year pillar opens in <b>" + L.firstStartYear + "</b>.";
+
+    drawDayun(); drawLiunian(); drawLiuyue();
+  }
+
+  $("dayun").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-i]") : null;
+    if (!b || !luck) return;
+    luck.daYunIdx = parseInt(b.getAttribute("data-i"), 10);
+    luck.liuNianIdx = yearOffset(luck.L.daYun[luck.daYunIdx], THIS_YEAR);
+    drawDayun(); drawLiunian(); drawLiuyue();
+  });
+
+  $("liunian").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-j]") : null;
+    if (!b || !luck) return;
+    luck.liuNianIdx = parseInt(b.getAttribute("data-j"), 10);
+    drawLiunian(); drawLiuyue();
+  });
+
+  /* ---------- default date ---------- */
+  var now = new Date();
+  $("date").value = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+
+  /* ---------- calculate ---------- */
+  var last = null;
+
+  $("go").addEventListener("click", function () {
+    msg.textContent = "";
+    var longitude, tz;
+    if ($("manual").checked) {
+      longitude = parseFloat($("lng").value);
+      tz = $("tz").value;
+      if (isNaN(longitude)) { msg.textContent = "Please enter a longitude in degrees (east positive, west negative)."; return; }
+      if (!tz) { msg.textContent = "Please choose a time zone."; return; }
+    } else {
+      if (!chosen) { msg.textContent = "Please pick your birth city from the suggestion list."; input.focus(); return; }
+      longitude = chosen.lng; tz = chosen.tz;
+    }
+    var dv = $("date").value, tv = $("time").value || "12:00";
+    if (!dv) { msg.textContent = "Please choose your birth date."; return; }
+    var dp = dv.split("-").map(Number), tp = tv.split(":").map(Number);
+    if (dp[0] < 1900 || dp[0] > 2100) { msg.textContent = "Please use a birth year between 1900 and 2100."; return; }
+
+    var res = window.BaziEngine.toTrueSolarTime({
+      year: dp[0], month: dp[1], day: dp[2], hour: tp[0], minute: tp[1],
+      longitude: longitude, timezone: tz,
+      useEquationOfTime: $("eot").checked
+    });
+    var s = res.solar, b = res.breakdown;
+    var sect = parseInt($("sect").value, 10);
+    var gender = parseInt($("gender").value, 10) === 0 ? 0 : 1;
+
+    var solarEc = window.Solar.fromYmdHms(s.year, s.month, s.day, s.hour, s.minute, 0).getLunar().getEightChar();
+    solarEc.setSect(sect);
+    var rawEc = window.Solar.fromYmdHms(dp[0], dp[1], dp[2], tp[0], tp[1], 0).getLunar().getEightChar();
+    rawEc.setSect(sect);
+
+    var sign = function (n) { var f = parseFloat(n); return (f > 0 ? "+" : "") + n; };
+    var dst = window.BaziEngine.dstMinutes(tz, b.utcMs);
+
+    /* --- true solar time readout --- */
+    $("solarDate").textContent = s.year + "-" + pad(s.month) + "-" + pad(s.day);
+    $("solarTime").textContent = pad(s.hour) + ":" + pad(s.minute);
+    $("solarTag").textContent = b.dayShift === 0
+      ? "True solar time"
+      : (b.dayShift > 0 ? "True solar time \u00b7 next calendar day" : "True solar time \u00b7 previous calendar day");
+    var totalShift = b.totalShiftMinutes;
+    $("shift").innerHTML = "The clock reads <b>" + pad(tp[0]) + ":" + pad(tp[1]) + "</b>; the sun says <b>" +
+      pad(s.hour) + ":" + pad(s.minute) + "</b> &mdash; a shift of " + sign(totalShift.toFixed(0)) + " minutes.";
+
+    /* --- correction chain --- */
+    var rows = [
+      ["Clock time entered", dp[0] + "-" + pad(dp[1]) + "-" + pad(dp[2]) + " " + pad(tp[0]) + ":" + pad(tp[1]), false],
+      ["Time zone in force that day", tz + " (" + b.utcOffsetLabel + ")", false]
+    ];
+    if (dst > 0) rows.push(["Daylight saving then", "+" + dst + " minutes", false]);
+    rows.push(["Zone central meridian", Math.abs(Math.round(b.zoneMeridian * 100) / 100) + "&deg;" + (b.zoneMeridian >= 0 ? "E" : "W"), false]);
+    rows.push(["Longitude correction", sign(b.longitudeCorrectionMinutes.toFixed(1)) + " min", false]);
+    rows.push(["Equation of time", sign(b.equationOfTimeMinutes.toFixed(1)) + " min", false]);
+    rows.push(["Total shift", sign(totalShift.toFixed(1)) + " min", true]);
+    $("chain").innerHTML = rows.map(function (r) {
+      return "<li" + (r[2] ? ' class="total"' : "") + '><span class="k">' + r[0] + '</span><span class="v">' + r[1] + "</span></li>";
+    }).join("");
+
+    /* --- four pillars --- */
+    var defs = [["Year", solarEc.getYear()], ["Month", solarEc.getMonth()], ["Day", solarEc.getDay()], ["Hour", solarEc.getTime()]];
+    $("pillars").innerHTML = defs.map(function (p) {
+      var gan = p[1][0], zhi = p[1][1];
+      var gEl = GAN_EL[gan], zEl = ZHI_EL[zhi];
+      return '<div class="pillar"><div class="lbl">' + p[0] + '</div><div class="gz">' + p[1] + '</div>' +
+        '<div class="el"><span style="color:' + EL_HEX[gEl] + '">' + gEl + " " + EL_CN[gEl] + '</span> ' +
+        '<span style="color:' + EL_HEX[zEl] + '">' + zEl + " " + EL_CN[zEl] + "</span></div></div>";
+    }).join("");
+
+    /* --- clock vs true solar --- */
+    var changedTime = solarEc.getTime() !== rawEc.getTime();
+    var changedDay = solarEc.getDay() !== rawEc.getDay();
+    var changed = changedTime || changedDay || solarEc.getMonth() !== rawEc.getMonth() || solarEc.getYear() !== rawEc.getYear();
+    $("compare").innerHTML = changed
+      ? "Reading the wall clock directly would give the hour pillar <b>" + rawEc.getTime() + "</b> and the day pillar <b>" +
+        rawEc.getDay() + "</b>. On true solar time you get hour <b>" + solarEc.getTime() + "</b> and day <b>" + solarEc.getDay() + "</b>."
+      : "On this date the correction is small enough that the wall clock and true solar time give the same chart.";
+
+    /* --- elements --- */
+    var counts = { Wood: 0, Fire: 0, Earth: 0, Metal: 0, Water: 0 };
+    defs.forEach(function (p) { counts[GAN_EL[p[1][0]]] += 1; counts[ZHI_EL[p[1][1]]] += 1; });
+    $("elements").innerHTML = Object.keys(counts).map(function (k) {
+      return '<span class="chip" style="color:' + EL_HEX[k] + ";background:" + EL_HEX[k] + '14">' + k + " " + counts[k] + "</span>";
+    }).join("");
+
+    /* --- luck pillars: 大运 / 流年 / 流月 --- */
+    buildLuck(solarEc, gender);
+    $("luck").classList.add("on");
+
+    last = {
+      gender: gender === 1 ? "male" : "female",
+      clock: dp[0] + "-" + pad(dp[1]) + "-" + pad(dp[2]) + " " + pad(tp[0]) + ":" + pad(tp[1]),
+      place: $("manual").checked ? ("custom coordinates, " + tz) : (input.value + " (" + tz + ")"),
+      solar: s.year + "-" + pad(s.month) + "-" + pad(s.day) + " " + pad(s.hour) + ":" + pad(s.minute),
+      pillars: defs.map(function (p) { return p[0] + " " + p[1]; }).join(" \u00b7 "),
+      dayMaster: solarEc.getDay()[0] + " (" + GAN_EL[solarEc.getDay()[0]] + " " + EL_CN[GAN_EL[solarEc.getDay()[0]]] + ")",
+      chain: "longitude " + sign(b.longitudeCorrectionMinutes.toFixed(1)) + " min, equation of time " + sign(b.equationOfTimeMinutes.toFixed(1)) + " min",
+      dst: dst > 0 ? ("+ " + dst + " min daylight saving") : "no daylight saving",
+      elements: Object.keys(counts).map(function (k) { return k + " " + counts[k]; }).join(", "),
+      luckStart: luck.L.startSolarDate + " (" + (luck.L.forward ? "forward" : "backward") + ", about " +
+        window.BaziLuck.startText(luck.L) + " after birth)",
+      currentLuck: "大运 " + luck.L.daYun[luck.daYunIdx].ganZhi + " " +
+        luck.L.daYun[luck.daYunIdx].startYear + "-" + luck.L.daYun[luck.daYunIdx].endYear + ", 流年 " +
+        luck.L.daYun[luck.daYunIdx].liuNian[luck.liuNianIdx].year + " " +
+        luck.L.daYun[luck.daYunIdx].liuNian[luck.liuNianIdx].ganZhi
+    };
+
+    var wa = $("wa");
+    if (wa) wa.href = "https://wa.me/" + wa.getAttribute("data-number") + "?text=" + encodeURIComponent(summaryText());
+
+    $("result").classList.add("on");
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  /* ---------- copy buttons ---------- */
+  function copy(text, btn, okLabel) {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = okLabel;
+      setTimeout(function () { btn.textContent = old; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, done);
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      done();
+    }
+  }
+
+  function summaryText() {
+    if (!last) return "";
+    return [
+      "Four Pillars of Destiny",
+      "Birth clock: " + last.clock,
+      "Place: " + last.place,
+      "True solar time: " + last.solar + "  (" + last.dst + ")",
+      "Gender: " + last.gender,
+      last.pillars,
+      "Day master: " + last.dayMaster,
+      "Elements: " + last.elements,
+      "Luck pillars start: " + last.luckStart,
+      "Now: " + last.currentLuck,
+      "Corrections: " + last.chain,
+      location.href
+    ].join("\n");
+  }
+
+  $("copysum").addEventListener("click", function () {
+    if (!last) return;
+    copy(summaryText(), this, "Copied");
+  });
+
+  $("copydata").addEventListener("click", function () {
+    if (!last) return;
+    copy(JSON.stringify(last, null, 2), this, "Copied");
+  });
+})();
+</script>

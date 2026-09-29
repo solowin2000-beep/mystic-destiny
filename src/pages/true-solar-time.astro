@@ -1,0 +1,224 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE, PAGES } from '../site.config.mjs';
+
+const meta = PAGES.find((p) => p.path === '/true-solar-time/');
+
+// 均时差实测值（NOAA 公式，2025 年，UTC 12:00 取样）
+const eot = [
+  ['January', -3.1, -8.8],
+  ['February', -13.3, -14.2],
+  ['March', -12.8, -9.5],
+  ['April', -4.2, -0.1],
+  ['May', 3.1, 3.9],
+  ['June', 2.5, -0.1],
+  ['July', -3.6, -5.8],
+  ['August', -6.5, -4.8],
+  ['September', -0.2, 4.8],
+  ['October', 10.6, 14.5],
+  ['November', 16.4, 15.0],
+  ['December', 10.5, 4.7],
+];
+
+const examples = [
+  ['1988-06-01 12:00', 'Beijing, China', 'UTC+09:00 (summer time)', '-74.4', '+2.5', '10:48', 'wu to si'],
+  ['1990-08-01 09:00', 'Shanghai, China', 'UTC+09:00 (summer time)', '-54.3', '-6.5', '07:59', 'si to chen'],
+  ['1988-07-15 14:30', 'New York, USA', 'UTC-04:00 (DST)', '-55.9', '-6.0', '13:28', 'unchanged'],
+  ['1988-07-15 14:30', 'London, UK', 'UTC+01:00 (BST)', '-60.5', '-6.0', '13:23', 'unchanged'],
+  ['1988-01-15 14:30', 'Sydney, Australia', 'UTC+11:00 (DST)', '-55.2', '-8.6', '13:26', 'unchanged'],
+];
+
+const faq = [
+  {
+    q: 'Is true solar time the same as local mean time?',
+    a: 'No. Local mean time only corrects for longitude. True solar time is local mean time plus the equation of time, so it also accounts for the sun running ahead or behind the average through the year. Some BaZi schools use mean time, which is why this site gives you a switch for the equation of time.',
+  },
+  {
+    q: 'Which meridian does the longitude correction use?',
+    a: 'The central meridian of the timezone that was in force at that moment. A UTC+08:00 zone is anchored at 120 degrees east, so a birthplace at 116.388 degrees east sits 3.612 degrees west of it, which is 14.4 minutes of solar time. Note that the meridian follows the offset actually in use, so during summer time it moves.',
+  },
+  {
+    q: 'How large can the equation of time get?',
+    a: 'It runs from about 14.2 minutes behind in mid-February to about 16.4 minutes ahead in early November, and it crosses zero four times a year. It is not a small refinement: sixteen minutes can be enough to cross a two-hour branch boundary.',
+  },
+  {
+    q: 'Did China really have daylight saving?',
+    a: 'Yes. China observed summer time from 1986 to 1991, generally from mid-April to mid-September, with the clocks going forward one hour. Anyone born in that window who is read with standard time only will have a birth moment an hour later than the sun actually was.',
+  },
+  {
+    q: 'Does this matter if I was born in the same city I live in?',
+    a: 'It matters less for the timezone, and not at all less for the other two corrections. Being east or west of your zone meridian and living through the seasons affects everyone, wherever they were born.',
+  },
+  {
+    q: 'Can I check the numbers myself?',
+    a: 'Yes, and we encourage it. The timezone offsets come from the IANA timezone database, the solar terms from published astronomical tables, and the equation of time from the standard NOAA solar formula. Every value the calculator uses is printed in the correction chain.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: meta.title,
+    description: meta.description,
+    url: new URL(meta.path, SITE.url).href,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+
+import QuickAnswer from '../components/QuickAnswer.astro';
+
+---
+<Base title={meta.title} description={meta.description} path={meta.path} ogType="article" jsonLd={jsonLd}>
+  <Breadcrumbs items={[{ name: 'True solar time', path: meta.path }]} />
+
+  <h1>True solar time: why the clock is not the sun</h1>
+  <p class="lede">
+    A BaZi chart is built from the position of the sun at the birthplace, but every birth record
+    gives you a clock reading. Three separate corrections sit between the two, and they add up.
+  </p>
+
+  <QuickAnswer
+    updated={SITE.updated}
+    points={[
+      'True solar time = clock time &minus; daylight saving + (standard meridian &minus; birthplace longitude) &times; 4 minutes + equation of time.',
+      'The longitude term is <b>4 minutes per degree</b>: one degree west of the zone meridian means four minutes earlier than the clock.',
+      'The equation of time runs from about <b>&minus;14.2 minutes</b> in mid-February to about <b>+16.4 minutes</b> in early November, and crosses zero four times a year.',
+      'Worked example: 1 June 1988, 12:00 clock time in Beijing &rarr; <b>10:48</b> true solar time.',
+    ]}
+  />
+
+
+  <h2>The three corrections, stacked</h2>
+
+  <h3>1. The timezone rule that was in force that day</h3>
+  <p>
+    A timezone is a political decision, and the rules change. China observed summer time from 1986 to
+    1991; the United States moved its daylight-saving dates in 2007; Arizona and Hawaii opt out
+    entirely. The correct offset is the one that applied at that place on that date, not the one that
+    applies today.
+  </p>
+  <p>
+    This is why a fixed assumption like <em>Beijing equals UTC+08:00</em> is not safe. On 1 June 1988
+    the offset in Beijing was UTC+09:00, and a chart calculated with UTC+08:00 starts from a birth
+    moment that is one hour too late. It also cuts the other way: mainland China keeps a single
+    official clock, so a birth in Xinjiang is normally recorded in Beijing time even though the
+    timezone database also carries an unofficial Xinjiang time of UTC+06:00.
+  </p>
+
+  <h3>2. Longitude, at four minutes per degree</h3>
+  <p>
+    Each timezone is anchored to a single central meridian. Anywhere east or west of it, solar noon
+    arrives early or late by four minutes per degree. Urumqi sits far to the west of the 120&deg;E
+    meridian that anchors Beijing time, which is where its enormous solar offset comes from.
+  </p>
+  <p>
+    Note that the meridian follows the offset actually in use. During summer time the anchor moves
+    with the clock, so the longitude correction is measured against a different meridian than in
+    winter.
+  </p>
+
+  <h3>3. The equation of time</h3>
+  <p>
+    The sun is not a perfect timekeeper. Because the Earth orbit is elliptical and its axis is
+    tilted, the sun runs ahead of mean time or behind it through the year, by up to about a quarter
+    of an hour in each direction.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Month</th><th>Equation of time, start of month</th><th>Mid month</th></tr>
+      </thead>
+      <tbody>
+        {eot.map((r) => (
+          <tr>
+            <td>{r[0]}</td>
+            <td class="num">{r[1] > 0 ? '+' : ''}{r[1].toFixed(1)} min</td>
+            <td class="num">{r[2] > 0 ? '+' : ''}{r[2].toFixed(1)} min</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    Values for 2025 from the standard NOAA solar formula. The extremes are about 14.2 minutes behind
+    in mid-February and 16.4 minutes ahead in early November, and the correction crosses zero four
+    times a year.
+  </p>
+
+  <h2>The formula</h2>
+  <div class="callout">
+    <p>
+      <strong>True solar time = clock time &minus; zone offset + longitude correction + equation of time</strong>
+    </p>
+    <p class="small" style="margin-bottom:0">
+      where the longitude correction is four minutes for every degree between your birthplace and the
+      central meridian of the offset in force, and the equation of time is read from the table above
+      for the date of birth.
+    </p>
+  </div>
+
+  <h2>Five worked examples</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Clock time</th><th>City</th><th>Offset in force</th><th>Longitude</th><th>Equation of time</th><th>True solar time</th><th>Hour branch</th></tr>
+      </thead>
+      <tbody>
+        {examples.map((r) => (
+          <tr>
+            <td class="num">{r[0]}</td>
+            <td>{r[1]}</td>
+            <td class="small">{r[2]}</td>
+            <td class="num">{r[3]} min</td>
+            <td class="num">{r[4]} min</td>
+            <td class="num"><strong>{r[5]}</strong></td>
+            <td class="small">{r[6]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Two of the five change the hour branch, and the first one also changes the hour pillar. That is
+    the whole argument for doing the correction: it is not a refinement of a few seconds, it can move
+    a pillar.
+  </p>
+
+  <h2>What it changes in the chart</h2>
+  <p>
+    The corrected instant flows into all four pillars. Most often it moves the hour, because the hour
+    branch is only two hours wide and the corrections together can exceed an hour. Near the turn of
+    the day it can also move the day pillar and therefore the day master, and near a solar-term
+    boundary it can move the month pillar.
+  </p>
+  <p>
+    The <a href="/bazi-hour-pillar/">hour pillar page</a> walks through the boundaries and the
+    midnight question in detail. The <a href="/bazi-calculator/">calculator</a> prints each of these
+    figures for your own birth data.
+  </p>
+
+  <h2>Where the numbers come from</h2>
+  <ul>
+    <li><strong>Historical timezones and daylight saving:</strong> the IANA timezone database, the same record used by operating systems and browsers, so China 1986 to 1991 and the 2007 United States rule change are both handled.</li>
+    <li><strong>Solar terms and the sexagenary day count:</strong> published astronomical solar-term tables, accurate to the second.</li>
+    <li><strong>Equation of time:</strong> the standard NOAA solar position formula.</li>
+    <li><strong>Coordinates:</strong> a world city database, with manual entry for anywhere it does not cover.</li>
+  </ul>
+
+  <Faq items={faq} />
+
+  <div class="cta">
+    <h2>See the correction for your own birth time</h2>
+    <p>
+      <a class="btn-link" href="/bazi-calculator/">Open the BaZi calculator</a>
+    </p>
+    <p class="small" style="margin:16px 0 0">
+      It shows both charts side by side, so you can see exactly which pillar moved.
+    </p>
+  </div>
+</Base>

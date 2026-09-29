@@ -1,0 +1,16 @@
+---
+import { SITE, PAGES } from '../site.config.mjs';
+const current = Astro.url.pathname;
+const nav = PAGES.filter((p) => p.path !== '/');
+const label = (p) => p.path.replace(/\//g, '').replace(/-/g, ' ');
+---
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">{SITE.name}</a>
+    <nav class="site-nav" aria-label="Primary">
+      {nav.map((p) => (
+        <a href={p.path} aria-current={current === p.path ? 'page' : undefined}>{label(p)}</a>
+      ))}
+    </nav>
+  </div>
+</header>

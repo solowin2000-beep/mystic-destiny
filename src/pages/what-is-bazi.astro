@@ -1,0 +1,192 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE, PAGES } from '../site.config.mjs';
+
+const meta = PAGES.find((p) => p.path === '/what-is-bazi/');
+
+const stems = [
+  ['Jia', 'Yang', 'Wood'], ['Yi', 'Yin', 'Wood'],
+  ['Bing', 'Yang', 'Fire'], ['Ding', 'Yin', 'Fire'],
+  ['Wu', 'Yang', 'Earth'], ['Ji', 'Yin', 'Earth'],
+  ['Geng', 'Yang', 'Metal'], ['Xin', 'Yin', 'Metal'],
+  ['Ren', 'Yang', 'Water'], ['Gui', 'Yin', 'Water'],
+];
+
+const branches = [
+  ['Zi', '23:00-00:59', 'Water', 'Rat'],
+  ['Chou', '01:00-02:59', 'Earth', 'Ox'],
+  ['Yin', '03:00-04:59', 'Wood', 'Tiger'],
+  ['Mao', '05:00-06:59', 'Wood', 'Rabbit'],
+  ['Chen', '07:00-08:59', 'Earth', 'Dragon'],
+  ['Si', '09:00-10:59', 'Fire', 'Snake'],
+  ['Wu', '11:00-12:59', 'Fire', 'Horse'],
+  ['Wei', '13:00-14:59', 'Earth', 'Goat'],
+  ['Shen', '15:00-16:59', 'Metal', 'Monkey'],
+  ['You', '17:00-18:59', 'Metal', 'Rooster'],
+  ['Xu', '19:00-20:59', 'Earth', 'Dog'],
+  ['Hai', '21:00-22:59', 'Water', 'Pig'],
+];
+
+const faq = [
+  {
+    q: 'What does BaZi mean?',
+    a: 'BaZi literally means eight characters. It is the eight symbols you get by writing a birth year, month, day and hour as pairs of heavenly stems and earthly branches. In English the system is often called the Four Pillars of Destiny.',
+  },
+  {
+    q: 'What is the day master?',
+    a: 'The day master is the heavenly stem of the day pillar, and it stands for the person the chart belongs to. Everything else in the chart is read in relation to it: which elements feed it, which drain it, and how balanced it is in the season it was born into.',
+  },
+  {
+    q: 'How is BaZi different from the Chinese zodiac?',
+    a: 'The zodiac animal is only the earthly branch of the year pillar. It is one character out of eight, and the year pillar is not even the one a reading leans on most. Two people born in the same zodiac year can have completely different charts.',
+  },
+  {
+    q: 'Why does the BaZi year start in February?',
+    a: 'Because the year pillar changes at lichun, the solar term that marks the start of spring, which falls around 4 February. Anyone born in January or the first days of February still belongs to the previous year pillar, even though the calendar year has already turned.',
+  },
+  {
+    q: 'Are the five elements a personality test?',
+    a: 'No. Wood, fire, earth, metal and water describe relationships between the parts of a chart, not personality types. The traditional reading looks at which elements are strong, which are missing and how they interact, in the season the person was born.',
+  },
+  {
+    q: 'Is BaZi scientific?',
+    a: 'The astronomy behind the calendar is exact: solar terms, true solar time and the sexagenary day count are all computable and verifiable. The interpretation built on top is a cultural tradition rather than a science, and this site presents it as such.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: meta.title,
+    description: meta.description,
+    url: new URL(meta.path, SITE.url).href,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+
+import QuickAnswer from '../components/QuickAnswer.astro';
+
+---
+<Base title={meta.title} description={meta.description} path={meta.path} ogType="article" jsonLd={jsonLd}>
+  <Breadcrumbs items={[{ name: 'What is BaZi', path: meta.path }]} />
+
+  <h1>What is BaZi? The four pillars explained</h1>
+  <p class="lede">
+    BaZi writes a birth moment as eight Chinese characters. Four of them describe the sky, four
+    describe the earth, and together they are the chart a reading is built from. Here is what each
+    character actually is, without the mystique.
+  </p>
+
+  <QuickAnswer
+    updated={SITE.updated}
+    points={[
+      'BaZi writes a birth moment as eight characters: year, month, day and hour, each a heavenly stem above an earthly branch.',
+      'The stem of the day pillar is the day master (&#x65E5;&#x4E3B;) &mdash; the reference point the rest of the chart is read against.',
+      'The year and month pillars follow the <b>solar terms</b>, not the lunar calendar and not 1 January, which is why the birth time has to be exact.',
+    ]}
+  />
+
+
+  <h2>The four pillars are four pairs</h2>
+  <p>
+    A birth moment is written as four vertical columns, one for the year, month, day and hour. Each
+    column holds two characters: a <strong>heavenly stem</strong> on top and an
+    <strong>earthly branch</strong> below. Four columns of two characters make eight, which is why
+    the system is called BaZi &mdash; literally eight characters.
+  </p>
+  <p>
+    The pillars are not independent. The year frames the generation, the month frames the season, the
+    day is the person, and the hour is the moment. A reading weighs them against each other rather
+    than reading any one alone.
+  </p>
+
+  <h2>The ten heavenly stems</h2>
+  <p>
+    There are ten stems, alternating between yang and yin, and each is tied to one of the five
+    elements. They are the yang and yin face of the same element, which is why there are ten rather
+    than five.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Stem</th><th>Polarity</th><th>Element</th></tr>
+      </thead>
+      <tbody>
+        {stems.map((s) => (
+          <tr><td>{s[0]}</td><td>{s[1]}</td><td>{s[2]}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The twelve earthly branches</h2>
+  <p>
+    The twelve branches are the familiar cycle of the zodiac, and each one also owns a two-hour
+    window of the day. That window is what decides the hour pillar &mdash; which is why an error of
+    an hour in the birth time can change the chart.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Branch</th><th>Hours</th><th>Element</th><th>Zodiac animal</th></tr>
+      </thead>
+      <tbody>
+        {branches.map((b) => (
+          <tr><td>{b[0]}</td><td class="num">{b[1]}</td><td>{b[2]}</td><td>{b[3]}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    The window shown is the clock window. A calculator working in true solar time shifts these
+    boundaries to match the sun at the birthplace.
+  </p>
+
+  <h2>The day master</h2>
+  <p>
+    The heavenly stem of the day pillar is the <strong>day master</strong>, and it represents the
+    person the chart belongs to. A reading starts from it: which elements support it, which drain
+    it, and whether the month it was born into strengthens or weakens it.
+  </p>
+  <p>
+    This is why the <a href="/bazi-calculator/">calculator</a> shows the day master separately. If
+    the birth time is wrong, the day master itself can be wrong, and every relationship in the
+    reading shifts with it.
+  </p>
+
+  <h2>The five elements</h2>
+  <p>
+    Wood, fire, earth, metal and water are the vocabulary of change in Chinese thought. In a chart
+    they are used relationally: wood feeds fire, fire makes earth, earth bears metal, metal carries
+    water, water grows wood, and each element also controls another. A reading is largely a study of
+    which of these movements are strong, weak or blocked.
+  </p>
+  <p>
+    Counting how many of each element appear is a starting point, not the answer. Position matters:
+    an element in the month pillar, which fixes the season of the chart, carries more weight than the
+    same element in the hour.
+  </p>
+
+  <h2>Why the calendar is the hard part</h2>
+  <p>
+    The rules above are simple. Applying them correctly is not, because BaZi does not use the
+    civil calendar:
+  </p>
+  <ul>
+    <li>The <strong>year</strong> changes at lichun, around 4 February, not on 1 January and not at Chinese New Year.</li>
+    <li>The <strong>month</strong> changes at each jie solar term, so a month is roughly 30.4 days and the boundaries fall on dates that move year to year.</li>
+    <li>The <strong>hour</strong> is decided by true solar time, not clock time, which brings in timezones, daylight saving, longitude and the equation of time.</li>
+  </ul>
+  <p>
+    Our <a href="/true-solar-time/">true solar time</a> page goes through the third point in detail,
+    and the <a href="/bazi-hour-pillar/">hour pillar</a> page covers the boundaries and the
+    midnight question.
+  </p>
+
+  <Faq items={faq} />
+</Base>

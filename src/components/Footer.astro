@@ -1,0 +1,24 @@
+---
+import { SITE, PAGES } from '../site.config.mjs';
+const year = new Date().getFullYear();
+const short = (t) => t.split(':')[0].split('(')[0].trim();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <nav aria-label="Footer">
+      {PAGES.map((p) => <a href={p.path}>{p.path === '/' ? 'Home' : short(p.title)}</a>)}
+    </nav>
+    <p>
+      {SITE.name} — {SITE.tagline}.{' '}
+      {SITE.whatsapp && <a href={'https://wa.me/' + SITE.whatsapp}>WhatsApp</a>}
+      {SITE.whatsapp && ' · '}
+      <a href={'mailto:' + SITE.email}>{SITE.email}</a>
+    </p>
+    <p class="disclaimer">
+      Charts on this site are calculated from the IANA world timezone database and published
+      solar-term tables. BaZi and the four pillars are part of Chinese cultural tradition and are
+      offered here for cultural, reflective and entertainment purposes. Nothing on this site is
+      medical, legal or financial advice. © {year} {SITE.name}.
+    </p>
+  </div>
+</footer>

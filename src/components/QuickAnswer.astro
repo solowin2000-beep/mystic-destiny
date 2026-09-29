@@ -1,0 +1,14 @@
+---
+/*
+ * GEO「答案前置」组件：页首放 3 条以内、可以直接被 AI 问答引擎整句引用的事实。
+ * points 支持行内 HTML（用 <b> 强调数字），updated 是可见的"最后更新"日期。
+ */
+const { points = [], updated = '', label = 'In short' } = Astro.props;
+---
+<aside class="quick-answer">
+  <p class="quick-answer__label">{label}</p>
+  <ul>
+    {points.map((point) => <li set:html={point} />)}
+  </ul>
+  {updated && <p class="quick-answer__meta">Last updated <time datetime={updated}>{updated}</time></p>}
+</aside>

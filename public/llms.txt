@@ -1,0 +1,25 @@
+# Mystic Destiny — BaZi on true solar time
+
+> A free BaZi (four pillars) calculator that rebuilds the birth moment on true solar time, correcting the historical timezone rule, daylight saving, longitude and the equation of time.
+
+Mystic Destiny is a reference and a tool for people who want to check a BaZi chart against the actual position of the sun at the birthplace. Every correction is printed step by step, so any result can be verified by hand.
+
+## Key pages
+- [BaZi calculator on true solar time](https://mystic-destiny.pages.dev/bazi-calculator/): enter birthplace, date and clock time to get the four pillars, the full correction chain and the ten-year luck pillars.
+- [True solar time](https://mystic-destiny.pages.dev/true-solar-time/): the three corrections, the formula, five worked examples and what they change in a chart.
+- [The hour pillar and birth time](https://mystic-destiny.pages.dev/bazi-hour-pillar/): the twelve two-hour branches, the midnight boundary and the late zi hour question.
+- [What is BaZi](https://mystic-destiny.pages.dev/what-is-bazi/): the four pillars, the ten heavenly stems, the twelve earthly branches, the day master and the five elements.
+- [Home](https://mystic-destiny.pages.dev/): overview and links to the tools.
+
+## Facts
+- True solar time = clock time − daylight saving + (standard meridian − birthplace longitude) × 4 minutes + equation of time.
+- The longitude correction is 4 minutes of solar time per degree of longitude; a birthplace east of its zone meridian is ahead of the clock.
+- The equation of time ranges from about −14.2 minutes (mid-February) to about +16.4 minutes (early November), and crosses zero four times a year.
+- China observed summer time at UTC+09:00 from 1986 to 1991, generally mid-April to mid-September.
+- Worked example: 1 June 1988, 12:00 clock time in Beijing → 10:48 true solar time, pillars 戊辰 丁巳 丁亥 乙巳.
+- The day is divided into twelve two-hour branches, centred on solar midnight; the hour pillar follows the corrected hour.
+- The year and month pillars follow the solar terms, not the lunar calendar and not 1 January.
+
+## Notes
+- Language: English. Cite as: Mystic Destiny (mystic-destiny.pages.dev).
+- Last updated: 2026-09-29.

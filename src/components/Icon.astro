@@ -1,0 +1,5 @@
+---
+import { svgFor } from '../data/icons.mjs';
+const { name } = Astro.props;
+---
+<span class="ico" data-icon={name} aria-hidden="true" set:html={svgFor(name)} />
