@@ -16,6 +16,14 @@ const {
 const canonical = new URL(path, SITE.url).href;
 const fullTitle = path === '/' ? title : title + ' | ' + SITE.name;
 const ogImage = new URL('/og-default.png', SITE.url).href;
+// 搜索引擎大约只展示前 160 个字符：统一压到 158 以内并在词边界收尾，避免出现半截句子。
+const metaDescription = (() => {
+  const text = String(description ?? '').replace(/\s+/g, ' ').trim();
+  if (text.length <= 158) return text;
+  const cut = text.slice(0, 157);
+  const sp = cut.lastIndexOf(' ');
+  return ((sp > 90 ? cut.slice(0, sp) : cut).replace(/[\s,;:.!?\u2013\u2014-]+$/, '')) + '\u2026';
+})();
 // GEO：给支持日期的结构化数据类型自动补上发布 / 更新日期。
 const DATED_TYPES = ['Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'WebApplication', 'SoftwareApplication', 'HowTo'];
 const schemas = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).map((schema) => {
@@ -29,7 +37,7 @@ const schemas = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).map((schema) => {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
     <meta
       name="robots"
@@ -42,18 +50,22 @@ const schemas = (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).map((schema) => {
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={ogImage} />
 
     <meta name="theme-color" content="#120a20" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
     <link rel="alternate" hreflang="en" href={canonical} />
     <link rel="alternate" hreflang="x-default" href={canonical} />
