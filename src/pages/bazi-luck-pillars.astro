@@ -1,0 +1,197 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import QuickAnswer from '../components/QuickAnswer.astro';
+import { SITE, PAGES } from '../site.config.mjs';
+
+const meta = PAGES.find((p) => p.path === '/bazi-luck-pillars/');
+
+const direction = [
+  ['Jia, Bing, Wu, Geng, Ren (yang)', 'Male', 'Forward (shun)'],
+  ['Yi, Ding, Ji, Xin, Gui (yin)', 'Female', 'Forward (shun)'],
+  ['Jia, Bing, Wu, Geng, Ren (yang)', 'Female', 'Backward (ni)'],
+  ['Yi, Ding, Ji, Xin, Gui (yin)', 'Male', 'Backward (ni)'],
+];
+
+const faq = [
+  {
+    q: 'What are the luck pillars in BaZi?',
+    a: 'They are a second layer of pillars laid over the birth chart. The ten-year pillars (da yun) divide life into decades, each carried by one sexagenary pillar; the annual pillars (liu nian) are the pillars of individual calendar years; the monthly pillars (liu yue) are the pillars of individual solar-term months. They are used to talk about timing rather than character.',
+  },
+  {
+    q: 'Why does the calculator need my gender?',
+    a: 'The direction of the ten-year cycle depends on the polarity of the year stem together with gender, so the same birth produces a forward cycle for a man and a backward one for a woman when the year stem is yang. The four pillars themselves do not depend on gender at all.',
+  },
+  {
+    q: 'How is the starting age worked out?',
+    a: 'By the distance from the birth moment to the neighbouring jie solar term, counted so that three days equal one year. A birth three days before the term and a birth three days after it can therefore open their first decade several years apart.',
+  },
+  {
+    q: 'Do the schools agree on the start age?',
+    a: 'No. The traditional count folds three days into a year; a stricter method converts the same interval into exact years, months and days. The two usually land within a year of each other, and the calculator lets you switch between them.',
+  },
+  {
+    q: 'How many ten-year pillars should I look at?',
+    a: 'Nine covers roughly ninety years and is the usual span. Beyond that the pillars describe ages few readings need to reach, and the further out you go the more speculative the reading becomes.',
+  },
+  {
+    q: 'Can I read the luck pillars on their own?',
+    a: 'They are usually read against the birth chart rather than in isolation: the pillar of the decade is judged by how it interacts with the day master and the existing four pillars. Treat a single pillar in the abstract as a starting point, not a verdict.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: meta.title,
+    description: meta.description,
+    url: new URL(meta.path, SITE.url).href,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+];
+---
+<Base title={meta.title} description={meta.description} path={meta.path} ogType="article" jsonLd={jsonLd}>
+  <Breadcrumbs items={[{ name: 'BaZi luck pillars', path: meta.path }]} />
+
+  <h1>BaZi luck pillars: the ten-year cycle</h1>
+  <p class="lede">
+    The four pillars describe the chart you were born with. The luck pillars describe when things
+    move: a ten-year pillar for every decade of life, an annual pillar for every year, and a monthly
+    pillar for every solar-term month. Here is how they are built.
+  </p>
+
+  <QuickAnswer
+    updated={SITE.updated}
+    points={[
+      'The ten-year pillars (da yun) run <b>forward</b> when a yang year stem meets a male birth or a yin year stem meets a female birth, and <b>backward</b> otherwise.',
+      'The first pillar is the <b>month pillar stepped one place</b> along the sexagenary cycle, and every following pillar is ten years on.',
+      'The start age comes from the distance to the neighbouring <i>jie</i> solar term, counted at <b>three days to one year</b>.',
+    ]}
+  />
+
+  <h2>Three layers, one idea</h2>
+  <p>
+    A birth chart is fixed. The luck pillars are the moving layer placed over it, and they come in
+    three sizes:
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Chinese</th><th>Span</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ten-year pillar</td><td class="num">&#x5927;&#x8FD0;</td><td class="num">10 years</td><td>One pillar per decade, starting from the calculated start age</td></tr>
+        <tr><td>Annual pillar</td><td class="num">&#x6D41;&#x5E74;</td><td class="num">1 year</td><td>The pillar of a single calendar year, ten of them inside each decade</td></tr>
+        <tr><td>Monthly pillar</td><td class="num">&#x6D41;&#x6708;</td><td class="num">1 month</td><td>The pillar of a solar-term month, twelve of them inside each year</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">
+    The layers nest: each ten-year pillar contains ten annual pillars, and each annual pillar
+    contains twelve monthly pillars. That is why the calculator lets you click into them one level at
+    a time.
+  </p>
+
+  <h2>Which way does the cycle run?</h2>
+  <p>
+    This is the one place where two people can share an identical birth chart and still get different
+    luck pillars. The direction is set by pairing the polarity of the birth year stem with gender:
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Birth year stem</th><th>Gender</th><th>Direction</th></tr>
+      </thead>
+      <tbody>
+        {direction.map((d) => (
+          <tr><td>{d[0]}</td><td>{d[1]}</td><td><strong>{d[2]}</strong></td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The year stem is yang for Jia, Bing, Wu, Geng and Ren, and yin for Yi, Ding, Ji, Xin and Gui. Two
+    of the four combinations run forward and two run backward, so a chart is never simply
+    &ldquo;forward for men&rdquo;.
+  </p>
+  <p>
+    This is why the calculator asks for gender at all. It does not enter the four pillars &mdash; it
+    only fixes the direction, and therefore the first pillar and every pillar after it.
+  </p>
+
+  <h2>Where the first pillar comes from</h2>
+  <p>
+    Take the month pillar of the birth chart and step it one place along the sixty-pillar cycle, in
+    the direction you just worked out. That single step is the first ten-year pillar. Every pillar
+    after it is another decade further along the same path. The cycle runs unbroken, which is a useful
+    check: if two neighbouring pillars in a chart are not adjacent in the sexagenary cycle, something
+    is wrong.
+  </p>
+
+  <h2>When the first decade opens</h2>
+  <p>
+    The start age is not the birth date and it is not a fixed number of years. It is the distance from
+    the birth moment to the neighbouring <i>jie</i> solar term &mdash; the terms that open a month, such
+    as Start of Spring and Awakening of Insects &mdash; converted at a rate of <strong>three days to
+    one year</strong>. In the same conversion, one day counts as four months and one two-hour watch as
+    ten days.
+  </p>
+  <p>
+    The consequence is larger than most people expect. A child born a few days before the term and a
+    child born a few days after it open their first decade years apart, even on the same day of the
+    same year. And because the term is measured in true solar time, the corrections on the
+    <a href="/true-solar-time/">true solar time page</a> feed into this number too.
+  </p>
+
+  <h2>A worked example</h2>
+  <p>
+    Take a birth on 1 June 1988 at 12:00 in Beijing. Corrected to true solar time that is 10:48, and
+    the four pillars are &#x620A;&#x8FB0; &#x4E01;&#x5DF3; &#x4E01;&#x4EA5; &#x4E59;&#x5DF3;. The year
+    stem, &#x620A; (Wu), is yang.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Reading</th><th>Direction</th><th>First ten-year pillar</th><th>Opens</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>As a male</td><td>Forward</td><td class="num">&#x620A;&#x5348;</td><td class="num">21 Nov 1989 &mdash; about 1 year 5 months after birth</td></tr>
+        <tr><td>As a female</td><td>Backward</td><td class="num">&#x4E19;&#x8FB0;</td><td class="num">1997 &mdash; about 8 years 11 months after birth</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Same moment, same place, same four pillars, and the two readings open on completely different
+    pillars at completely different ages. For the male, the decade covering 2019 to 2028 &mdash; ages
+    32 to 41 &mdash; is carried by &#x8F9B;&#x9149;, with the annual pillars running
+    &#x5DF1;&#x4EA5; in 2019 up to &#x620A;&#x7533; in 2028.
+  </p>
+
+  <h2>Reading the annual and monthly pillars</h2>
+  <p>
+    The annual pillar is simply the pillar of that calendar year in the sixty-pillar cycle: 2024 is
+    &#x7532;&#x8FB0; and 2025 is &#x4E59;&#x5DF3;. Inside a year, the monthly pillars switch at the solar
+    terms rather than at the first of the month, and the sequence of stems depends on the year stem &mdash;
+    a Jia or Ji year opens its first month on &#x4E19;&#x5BC5;, which is the rule remembered as
+    &ldquo;Jia and Ji years begin with Bing&rdquo;.
+  </p>
+  <p>
+    These layers are traditionally read against the birth chart rather than on their own, and schools
+    differ on how much weight each deserves. Read them as a way of talking about timing, alongside a
+    qualified reader rather than instead of one.
+  </p>
+
+  <Faq items={faq} />
+
+  <div class="cta">
+    <h2>See your own luck pillars</h2>
+    <p>
+      The calculator builds all three layers from your birth details &mdash; and shows the start age
+      and direction it used. <a class="btn-link" href="/bazi-calculator/">Open the BaZi calculator</a>
+    </p>
+  </div>
+</Base>

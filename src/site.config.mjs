@@ -11,7 +11,7 @@ export const SITE = {
 
   // GEO：页面与结构化数据里的发布/更新日期。以后改了内容，把 updated 改成当天。
   published: '2026-09-28',
-  updated: '2026-09-29',
+  updated: '2026-10-20',
   // WhatsApp 号码只填数字与国际区号，不要有 + 和空格，例如 8613515054915。
   email: 'luhua0213@hotmail.com',
   whatsapp: '8613515054915',
@@ -60,6 +60,14 @@ export const PAGES = [
     description:
       'How the BaZi hour pillar is decided: the two-hour branches, the midnight boundary, the late zi hour debate, and how daylight saving moves it.',
     keyword: 'bazi hour pillar',
+    ogType: 'article',
+  },
+  {
+    path: '/bazi-luck-pillars/',
+    title: 'BaZi Luck Pillars: The Ten-Year Cycle',
+    description:
+      'How the ten-year luck pillars in BaZi are built: which way they run, when they start, and how the annual and monthly pillars sit inside them.',
+    keyword: 'bazi luck pillars',
     ogType: 'article',
   },
   {
