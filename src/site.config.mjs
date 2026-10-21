@@ -18,7 +18,7 @@ export const SITE = {
 
   verification: {
     google: '2AyL_UnLnHfOFQTyTsuwMSUsq5aD1JfIelroMhRNBCw',
-    bing: '',
+    bing: '205FC90A906C0863517A6F214571522A',
   },
 
   // IndexNow（Bing / Yandex 即时收录）。public/indexnow-key.txt 的内容必须与这个值完全一致。
