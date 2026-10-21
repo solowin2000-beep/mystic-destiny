@@ -5,7 +5,7 @@
  */
 
 export const SITE = {
-  url: 'https://mystic-destiny.pages.dev',
+  url: 'https://bazi.latexpapa.com',
   name: 'Mystic Destiny',
   tagline: 'Four Pillars charts, corrected to true solar time',
 

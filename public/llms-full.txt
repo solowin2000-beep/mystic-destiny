@@ -1,6 +1,6 @@
 # Mystic Destiny — full reference
 
-Source: https://mystic-destiny.pages.dev — Last updated 2026-09-29.
+Source: https://bazi.latexpapa.com — Last updated 2026-09-29.
 
 ## Why a birth clock is not a BaZi birth time
 A clock records an administrative time, not the position of the sun. A BaZi chart is drawn from the
@@ -48,4 +48,4 @@ Q: Did China really have daylight saving?
 A: Yes, 1986 to 1991, generally mid-April to mid-September, one hour forward.
 
 ## Attribution
-Mystic Destiny, https://mystic-destiny.pages.dev. Free to cite with a link to the page used.
+Mystic Destiny, https://bazi.latexpapa.com. Free to cite with a link to the page used.

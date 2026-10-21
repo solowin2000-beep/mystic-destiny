@@ -5,11 +5,11 @@
 Mystic Destiny is a reference and a tool for people who want to check a BaZi chart against the actual position of the sun at the birthplace. Every correction is printed step by step, so any result can be verified by hand.
 
 ## Key pages
-- [BaZi calculator on true solar time](https://mystic-destiny.pages.dev/bazi-calculator/): enter birthplace, date and clock time to get the four pillars, the full correction chain and the ten-year luck pillars.
-- [True solar time](https://mystic-destiny.pages.dev/true-solar-time/): the three corrections, the formula, five worked examples and what they change in a chart.
-- [The hour pillar and birth time](https://mystic-destiny.pages.dev/bazi-hour-pillar/): the twelve two-hour branches, the midnight boundary and the late zi hour question.
-- [What is BaZi](https://mystic-destiny.pages.dev/what-is-bazi/): the four pillars, the ten heavenly stems, the twelve earthly branches, the day master and the five elements.
-- [Home](https://mystic-destiny.pages.dev/): overview and links to the tools.
+- [BaZi calculator on true solar time](https://bazi.latexpapa.com/bazi-calculator/): enter birthplace, date and clock time to get the four pillars, the full correction chain and the ten-year luck pillars.
+- [True solar time](https://bazi.latexpapa.com/true-solar-time/): the three corrections, the formula, five worked examples and what they change in a chart.
+- [The hour pillar and birth time](https://bazi.latexpapa.com/bazi-hour-pillar/): the twelve two-hour branches, the midnight boundary and the late zi hour question.
+- [What is BaZi](https://bazi.latexpapa.com/what-is-bazi/): the four pillars, the ten heavenly stems, the twelve earthly branches, the day master and the five elements.
+- [Home](https://bazi.latexpapa.com/): overview and links to the tools.
 
 ## Facts
 - True solar time = clock time − daylight saving + (standard meridian − birthplace longitude) × 4 minutes + equation of time.
